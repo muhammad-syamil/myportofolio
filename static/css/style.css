@@ -21,8 +21,12 @@ body {
     line-height: 1.6;
 }
 
-h1, .brand {
+h1, h2, h3, .brand {
     font-family: "Space Grotesk", -apple-system, sans-serif;
+}
+
+html {
+    scroll-behavior: smooth;
 }
 
 .container {
@@ -33,6 +37,11 @@ h1, .brand {
 
 .site-header {
     border-bottom: 1px solid var(--line);
+    background-color: rgba(250, 246, 240, 0.94);
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    backdrop-filter: blur(10px);
 }
 
 .site-header .container {
@@ -58,6 +67,12 @@ h1, .brand {
     color: var(--ink);
     text-decoration: none;
     font-size: 0.95rem;
+    transition: color 0.2s ease;
+}
+
+.site-header nav a:hover,
+.site-header nav a:focus-visible {
+    color: var(--accent);
 }
 
 .hero {
@@ -141,6 +156,182 @@ h1, .brand {
     background-color: var(--accent);
 }
 
+.section {
+    padding: 5rem 0;
+    scroll-margin-top: 5rem;
+}
+
+.section-heading {
+    max-width: 620px;
+    margin-bottom: 2.5rem;
+}
+
+.section-kicker,
+.project-type {
+    color: var(--accent-dark);
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.09em;
+    text-transform: uppercase;
+}
+
+.section-heading h2 {
+    font-size: clamp(2.3rem, 5vw, 3.6rem);
+    line-height: 1;
+    margin: 0.45rem 0 0.8rem;
+}
+
+.section-heading > p:last-child {
+    color: var(--text-muted);
+}
+
+.projects {
+    border-top: 1px solid var(--line);
+}
+
+.project-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1rem;
+}
+
+.project-card {
+    min-height: 340px;
+    padding: 1.6rem;
+    border: 1px solid var(--ink);
+    border-radius: var(--radius);
+    background-color: transparent;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.project-card-featured {
+    grid-row: span 2;
+    min-height: 696px;
+    background-color: var(--ink);
+    color: var(--paper);
+}
+
+.project-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 7px 7px 0 var(--accent);
+}
+
+.project-number {
+    align-self: flex-end;
+    color: var(--accent);
+    font-family: "Space Grotesk", sans-serif;
+    font-size: 2.5rem;
+    font-weight: 700;
+}
+
+.project-content h3 {
+    font-size: 1.55rem;
+    line-height: 1.15;
+    margin: 0.55rem 0 0.75rem;
+}
+
+.project-content > p:not(.project-type) {
+    color: var(--text-muted);
+    margin-bottom: 1.25rem;
+}
+
+.project-card-featured .project-content > p:not(.project-type) {
+    color: #cfc8bd;
+}
+
+.tag-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.45rem;
+    list-style: none;
+    margin-bottom: 1.5rem;
+}
+
+.tag-list li {
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    padding: 0.25rem 0.65rem;
+    font-size: 0.75rem;
+    font-weight: 600;
+}
+
+.project-card-featured .tag-list li {
+    border-color: #514b45;
+}
+
+.project-link {
+    color: inherit;
+    font-weight: 700;
+    text-decoration-color: var(--accent);
+    text-decoration-thickness: 2px;
+    text-underline-offset: 0.3rem;
+}
+
+.project-link span {
+    display: inline-block;
+    transition: transform 0.2s ease;
+}
+
+.project-link:hover span {
+    transform: translateX(4px);
+}
+
+.skills {
+    color: var(--paper);
+    background-color: var(--ink);
+}
+
+.skills-layout {
+    display: grid;
+    grid-template-columns: minmax(0, 0.8fr) minmax(0, 1.2fr);
+    gap: 4rem;
+}
+
+.skills-heading {
+    position: sticky;
+    top: 7rem;
+    align-self: start;
+}
+
+.skills-heading > p:last-child {
+    color: #cfc8bd;
+}
+
+.skill-groups {
+    border-top: 1px solid #514b45;
+}
+
+.skill-group {
+    padding: 1.6rem 0;
+    border-bottom: 1px solid #514b45;
+}
+
+.skill-group h3 {
+    color: var(--accent);
+    font-size: 1rem;
+    margin-bottom: 0.9rem;
+}
+
+.skill-group ul {
+    list-style: none;
+}
+
+.skill-group li {
+    display: flex;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 0.35rem 0;
+}
+
+.skill-level {
+    color: #989087;
+    font-size: 0.8rem;
+    text-align: right;
+}
+
 .hero-photo {
     grid-area: photo;
     align-self: center;
@@ -177,6 +368,21 @@ h1, .brand {
 }
 
 @media (max-width: 600px) {
+    .site-header .container {
+        align-items: flex-start;
+        gap: 1rem;
+    }
+
+    .site-header nav {
+        gap: 0.85rem;
+        flex-wrap: wrap;
+        justify-content: flex-end;
+    }
+
+    .site-header nav a {
+        font-size: 0.8rem;
+    }
+
     .hero-grid {
         grid-template-columns: 1fr;
         grid-template-areas:
@@ -191,5 +397,28 @@ h1, .brand {
 
     .social-links {
         justify-content: flex-start;
+    }
+
+    .section {
+        padding: 4rem 0;
+    }
+
+    .project-grid,
+    .skills-layout {
+        grid-template-columns: 1fr;
+    }
+
+    .project-card,
+    .project-card-featured {
+        min-height: 330px;
+        grid-row: auto;
+    }
+
+    .skills-layout {
+        gap: 1rem;
+    }
+
+    .skills-heading {
+        position: static;
     }
 }
