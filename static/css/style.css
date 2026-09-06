@@ -208,10 +208,16 @@ html {
 }
 
 .project-card-featured {
-    grid-row: span 2;
-    min-height: 696px;
+    grid-row: auto;
+    min-height: 400px;
     background-color: var(--ink);
     color: var(--paper);
+}
+
+.project-robotic{
+    min-height: 400px;
+    padding-top: 5rem;
+
 }
 
 .project-card:hover {
