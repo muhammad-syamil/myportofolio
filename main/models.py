@@ -24,3 +24,13 @@ class Experience(models.Model):
     @property
     def is_ongoing(self):
         return self.ended_at is None
+
+class Achievements(models.Model):
+    title = models.CharField(max_length=255)
+    description = models.TextField()
+    field = models.CharField(max_length=255)
+    image_url = models.URLField(blank=True, default="")
+
+    def __str__(self):
+        return self.title
+
