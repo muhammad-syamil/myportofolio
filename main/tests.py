@@ -2,7 +2,7 @@ from django.test import TestCase
 from django.urls import reverse
 from django.utils import timezone
 
-from main.models import Experience
+from main.models import Experience, Achievements
 
 
 class MainTest(TestCase):
@@ -56,3 +56,44 @@ class MainTest(TestCase):
         self.assertFalse(self.experience.is_ongoing)
         self.assertContains(response, "Selesai")
         self.assertNotContains(response, "Sedang berlangsung")
+
+
+class AchievementsTest(TestCase):
+    def test_achievements_url_and_template(self):
+        response = self.client.get(reverse("main:show_achievements"))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, "achievements.html")
+
+    def test_achievement_data_appears(self):
+        Achievements.objects.create(
+            title="Juara 1 Kompetisi Data Science",
+            description="Meraih juara pertama dalam kompetisi data science.",
+            field="Data Science",
+            image_url="https://example.com/sertifikat.jpg",
+        )
+
+        response = self.client.get(reverse("main:show_achievements"))
+
+        self.assertContains(response, "Juara 1 Kompetisi Data Science")
+        self.assertContains(
+            response,
+            "Meraih juara pertama dalam kompetisi data science.",
+        )
+        self.assertContains(response, "Data Science")
+        self.assertContains(
+            response,
+            'src="https://example.com/sertifikat.jpg"',
+        )
+        self.assertNotContains(
+            response,
+            "Belum ada prestasi yang ditambahkan.",
+        )
+
+    def test_empty_achievements_page(self):
+        response = self.client.get(reverse("main:show_achievements"))
+
+        self.assertContains(
+            response,
+            "Belum ada prestasi yang ditambahkan.",
+        )

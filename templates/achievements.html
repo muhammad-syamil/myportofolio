@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Experience - {{ name }}</title>
+    <title>Achievements - {{ name }}</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
@@ -17,36 +17,42 @@
                 <a href="{% url 'main:show_main' %}">Profile</a>
                 <a href="{% url 'main:show_experience' %}">Experience</a>
                 <a href="{% url 'main:show_achievements' %}">Achievements</a>
+
             </nav>
         </div>
     </header>
 
     <main>
-        <section class="experience-section" id="experience">
+        <section class="achievements-section" id="achievements">
             <div class="container">
-                <p class="section-kicker">Perjalanan saya sejauh ini</p>
-                <h1>Experience</h1>
+                <h1>Achievements</h1>
 
-                <div class="experience-grid">
-                    {% for experience in experience_list %}
-                        <article class="experience-card">
-                            <span class="experience-category">
-                                {{ experience.get_category_display }}
-                            </span>
-                            <h2>{{ experience.title }}</h2>
-                            <p class="experience-description">
-                                {{ experience.description }}
+                <div class="achievements-grid">
+                    {% for achievements in achievement_list %}
+                        <article class="achievements-card">
+                            {% if achievements.image_url %}
+                                <img
+                                    src="{{ achievements.image_url }}"
+                                    alt="{{ achievements.title }}"
+                                    class="achievements-image"
+                                >
+                            {% endif %}
+
+                            <h2>{{ achievements.title }}</h2>
+
+                            <p class="achievements-description">
+                                {{ achievements.description }}
                             </p>
 
-                            {% if experience.is_ongoing %}
-                                <p class="experience-status">Sedang berlangsung</p>
-                            {% else %}
-                                <p class="experience-status">Selesai</p>
-                            {% endif %}
+                            <p>
+                                <strong>Field:</strong>
+                                {{ achievements.field }}
+                            </p>
+
                         </article>
                     {% empty %}
                         <p class="empty-state">
-                            Belum ada pengalaman yang ditambahkan.
+                            Belum ada prestasi yang ditambahkan.
                         </p>
                     {% endfor %}
                 </div>
