@@ -6,11 +6,11 @@ from main.models import Experience, Achievements
 def show_main(request):
     context = {
         "name": "Muhammad Syamil",
-        "npm": "2206000000",
+        "npm": "2506547746",
         "study_program": "S1 Ilmu Komputer",
         "bio": (
             "Mahasiswa Ilmu Komputer Universitas Indonesia yang tertarik "
-            "pada pengembangan perangkat lunak dan pendidikan."
+            "pada Data Science dan Artificial Intelligence."
         ),
     }
     return render(request, "index.html", context)

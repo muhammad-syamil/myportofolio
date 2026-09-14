@@ -24,3 +24,12 @@ pada proyek berikutnya, saya ingin meningkatkan fungsionalitas dari website nya 
 
 ### AI Disclosure Tugas 1
 Saya menggunakan claude untuk membantu membuat gambaran design secara garis besar dan saya mencoba menerapkan nya ke html secara mandiri. Ketika ada yang error dan ketidakseuaian design yang saya mau, saya minta bantuan claude untuk membenarkan code nya.
+
+
+### Tugas 2
+
+1. Pertama, Ketika pengguna membuka /achievements, urls.py proyek melanjutkan permintaan ke urls.py aplikasi main, yang setelah itu memanggil view show_achievements. Kemudian, view mengambil data dari database melalui model Achievements, lalu mengirimkannya melalui context ke template achievements.html. Template menampilkan data menggunakan perulangan atau pesan kosong jika belum ada data. Django kemudian mengirim hasil HTML ke browser untuk ditampilkan.
+
+2. Data lebih baik disimpan dalam database melalui model supaya masing-masing berdiri secara independen. Sehingga, data mudah untuk diubah, ditambah, dan dihapus tanpa mengubah ubah HTML nya. Hal ini juga memudahkan untuk pemelihraan aplikasi. Pengembangan fitur seperti pencarian, filter, dll juga lebih mudah karena datanya terstruktur.
+
+3. makemigrations membuat berkas migrasi yang berisi catatan perubahan model, sedangkan migrate adalah command untuk menerapkan perubahan tersebut ke database. Contohnya, ketika menambahkan field image_url pada model Achievements, makemigrations dan migrate perlu dijalankan agar kolom baru tersedia di database.
