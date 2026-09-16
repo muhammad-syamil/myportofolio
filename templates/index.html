@@ -1,216 +1,331 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+{% extends "base.html" %}
+{% load static %}
+
+{% block meta %}
     <title>{{ name }} - Portfolio</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="/static/css/style.css">
-</head>
-<body>
-    <header class="site-header">
-        <div class="container">
-            <a href="{% url 'main:show_main' %}" class="brand">{{ name }}</a>
-            <nav>
-                <a href="{% url 'main:show_main' %}">Profile</a>
-                <a href="{% url 'main:show_experience' %}">Experience</a>
-                <a href="{% url 'main:show_achievements' %}">Achievements</a>
-            </nav>
+{% endblock meta %}
+
+{% block content %}
+<main>
+    <section class="hero" id="profile">
+        <div class="container hero-grid">
+            <div class="hero-identity">
+                <p class="hero-kicker">
+                    Computer Science &middot; Universitas Indonesia
+                </p>
+                <h1>Syamil</h1>
+            </div>
+
+            <div class="hero-photo">
+                <div class="photo-block"></div>
+                <img
+                    class="avatar"
+                    src="{% static 'img/fotoganteng.jpg' %}"
+                    alt="Photo of {{ name }}"
+                >
+            </div>
+
+            <div class="hero-details">
+                <p class="bio">{{ bio }}</p>
+
+                <dl class="meta-list">
+                    <div class="meta-row">
+                        <dt>NPM</dt>
+                        <dd>{{ npm }}</dd>
+                    </div>
+
+                    <div class="meta-row">
+                        <dt>Program</dt>
+                        <dd>{{ study_program }}</dd>
+                    </div>
+                </dl>
+
+                <div class="social-links">
+                    <a
+                        href="https://github.com/muhammad-syamil"
+                        class="social-link"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                    >
+                        GitHub
+                    </a>
+
+                    <a
+                        href="https://www.linkedin.com/in/muhammad-syamil-b96482346/"
+                        class="social-link"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                    >
+                        LinkedIn
+                    </a>
+
+                    <a
+                        href="mailto:muhammad.syamil51@ui.ac.id"
+                        class="social-link"
+                    >
+                        Email
+                    </a>
+                </div>
+            </div>
         </div>
-    </header>
+    </section>
 
-    <main>
-        <section class="hero" id="profile">
-            <div class="container hero-grid">
-                <div class="hero-identity">
-                    <p class="hero-kicker">Computer Science &middot; Universitas Indonesia</p>
-                    <h1>Syamil</h1>
-                </div>
-                <div class="hero-photo">
-                    <div class="photo-block"></div>
-                    <img class="avatar" src="/static/img/fotoganteng.jpg" alt="Photo of {{ name }}">
-                </div>
-                <div class="hero-details">
-                    <p class="bio">{{ bio }}</p>
-                    <dl class="meta-list">
-                        <div class="meta-row">
-                            <dt>NPM</dt>
-                            <dd>{{ npm }}</dd>
-                        </div>
-                        <div class="meta-row">
-                            <dt>Program</dt>
-                            <dd>{{ study_program }}</dd>
-                        </div>
-                    </dl>
-                    <div class="social-links">
-                        <a href="https://github.com/muhammad-syamil" class="social-link">GitHub</a>
-                        <a href="https://www.linkedin.com/in/muhammad-syamil-b96482346/" class="social-link">LinkedIn</a>
-                        <a href="mailto: muhammad.syamil51@ui.ac.id" class="social-link">Email</a>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <section class="skills section" id="skills">
-            <div class="container">
-                <div class="section-heading">
-                    <p class="section-kicker">What I use</p>
-                    <h2>Skills</h2>
-                    <p>Technologies and tools I use to turn ideas into practical, well-built products.</p>
-                </div>
-
-                <div class="skill-grid">
-                    <div class="skill-card">
-                        <div class="skill-card-head">
-                            <h3>Programming Languages</h3>
-                            <span class="skill-index" aria-hidden="true">01</span>
-                        </div>
-                        <ul class="skill-rows">
-                            <li><span>Java</span><span class="skill-level">Proficient</span></li>
-                            <li><span>Python</span><span class="skill-level">Proficient</span></li>
-                            <li><span>HTML &amp; CSS</span><span class="skill-level skill-level-muted">Beginner</span></li>
-                        </ul>
-                    </div>
-
-                    <div class="skill-card">
-                        <div class="skill-card-head">
-                            <h3>Currently Exploring</h3>
-                            <span class="skill-index" aria-hidden="true">02</span>
-                        </div>
-                        <ul class="skill-pills">
-                            <li>Computer Vision</li>
-                            <li>Natural Language Processing</li>
-                            <li>Machine Learning</li>
-                        </ul>
-                        <p class="skill-note">Self-study alongside coursework.</p>
-                    </div>
-
-                    <div class="skill-card skill-card-invert">
-                        <div class="skill-card-head">
-                            <h3>Language &amp; Certifications</h3>
-                            <span class="skill-index" aria-hidden="true">03</span>
-                        </div>
-                        <ul class="skill-scores">
-                            <li>
-                                <div class="skill-score-row"><span>IELTS</span><span class="skill-score">7.0</span></div>
-                                <p>Professional level</p>
-                            </li>
-                            <li>
-                                <div class="skill-score-row"><span>UKBI</span><span class="skill-score">701</span></div>
-                                <p>Mother tongue</p>
-                            </li>
-                        </ul>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <section class="projects section" id="projects">
-            <div class="container">
-                <div class="section-heading">
-                    <p class="section-kicker">Selected work</p>
-                    <h2>Projects</h2>
-                </div>
-
-                <div class="project-grid">
-                    <article class="project-card project-card-featured">
-                        <div class="project-number" aria-hidden="true">01</div>
-                        <div class="project-content">
-                            <p class="project-type">Web Development</p>
-                            <h3>Personal Portfolio</h3>
-                            <p>A responsive personal website built to showcase my profile, projects, and technical skills.</p>
-                            <ul class="tag-list" aria-label="Technologies used">
-                                <li>HTML</li>
-                                <li>CSS</li>
-                                <li>Django</li>
-                            </ul>
-                            <a class="project-link" href="https://muhammad-syamil51-myportofolio.pws.cs.ui.ac.id/" target="_blank" rel="noopener noreferrer">View project <span aria-hidden="true">&rarr;</span></a>
-                        </div>
-                    </article>
-
-                    <article class="project-card project-robotic">
-                        <div class="project-number" aria-hidden="true">02</div>
-                        <div class="project-content">
-                            <p class="project-type">Robotic</p>
-                            <h3>Portable Air Quality Detector</h3>
-                            <p>Arduino based portable carbon emission (CO2 &amp; Hydrocarbon) detector </p>
-                            <ul class="tag-list" aria-label="Technologies used">
-                                <li>Arduino</li>
-                                <li>IoT</li>
-                                <li>ESP32</li>
-                            </ul>
-                            <a class="project-link" href="https://github.com/Samuell487/Arduino-Based-Smart-Emission-Monitoring-System" target="_blank" rel="noopener noreferrer">View project <span aria-hidden="true">&rarr;</span></a>
-                        </div>
-                    </article>
-
-                </div>
-            </div>
-        </section>
-
-        <section class="experience section" id="experience">
-            <div class="container experience-layout">
-                <div class="section-heading experience-heading">
-                    <p class="section-kicker">Where I've been</p>
-                    <h2>Experience</h2>
-                    <p>Roles, organisations, and teams I have worked with so far.</p>
-                </div>
-
-                <div class="experience-groups">
-                    <div class="experience-group">
-                        <h3>STAFF</h3>
-                        <div class="experience-meta">
-                            <span>COMPFEST 18</span>
-                            <span class="experience-date">2026 &ndash; present</span>
-                        </div>
-                        <p>Design, manage, and evaluate challenges that test participants' abilities to transform raw data into actionable insights. We create real-world problem statements, curate complex datasets, establish clear evaluation metrics, and coordinate mentoring and judging panels to identify top analytical talent.</p>
-                    </div>
-
-                    <div class="experience-group">
-                        <h3>STAFF</h3>
-                        <div class="experience-meta">
-                            <span>BEM FASILKOM UI</span>
-                            <span class="experience-date">2026 &ndash; present</span>
-                        </div>
-                        <p>Organize student activities, fundraisers, and community welfare initiatives.</p>
-                    </div>
-
-                    <div class="experience-group">
-                        <h3>MENTOR</h3>
-                        <div class="experience-meta">
-                            <span>DDP 0</span>
-                            <span class="experience-date">2026</span>
-                        </div>
-                        <p>Experienced in guiding learners through core programming fundamentals, troubleshooting complex bugs, and fostering a supportive environment for technical growth. Combines hands-on coding skills with a strong commitment to community learning and team collaboration.</p>
-                    </div>
-
-                    <div class="experience-group">
-                        <h3>UI/UX DESIGNER</h3>
-                        <div class="experience-meta">
-                            <span>Pandu Nyawa</span>
-                            <span class="experience-date">2024</span>
-                        </div>
-                        <p>UI/UX Designer creating accessible, patient-centric, and clinician-focused digital healthcare products. Combining deep user empathy with data-driven design to simplify complex medical workflows.</p>
-                    </div>
-
-                    <div class="experience-group">
-                        <h3>LEADER</h3>
-                        <div class="experience-meta">
-                            <span>MAN 4 Jakarta Robotic Team</span>
-                            <span class="experience-date">2024</span>
-                        </div>
-                        <p>Robotics Team Lead directing cross-functional engineering teams to design, build, and deploy autonomous systems and intelligent machinery.</p>
-                    </div>
-                </div>
-            </div>
-        </section>
-    </main>
-
-    <footer class="site-footer">
+    <section class="skills section" id="skills">
         <div class="container">
-            <p>&copy; 2026 {{ name }}. Fakultas Ilmu Komputer, Universitas Indonesia.</p>
+            <div class="section-heading">
+                <p class="section-kicker">What I use</p>
+                <h2>Skills</h2>
+                <p>
+                    Technologies and tools I use to turn ideas into practical,
+                    well-built products.
+                </p>
+            </div>
+
+            <div class="skill-grid">
+                <div class="skill-card">
+                    <div class="skill-card-head">
+                        <h3>Programming Languages</h3>
+                        <span class="skill-index" aria-hidden="true">01</span>
+                    </div>
+
+                    <ul class="skill-rows">
+                        <li>
+                            <span>Java</span>
+                            <span class="skill-level">Proficient</span>
+                        </li>
+
+                        <li>
+                            <span>Python</span>
+                            <span class="skill-level">Proficient</span>
+                        </li>
+
+                        <li>
+                            <span>HTML &amp; CSS</span>
+                            <span class="skill-level skill-level-muted">
+                                Beginner
+                            </span>
+                        </li>
+                    </ul>
+                </div>
+
+                <div class="skill-card">
+                    <div class="skill-card-head">
+                        <h3>Currently Exploring</h3>
+                        <span class="skill-index" aria-hidden="true">02</span>
+                    </div>
+
+                    <ul class="skill-pills">
+                        <li>Computer Vision</li>
+                        <li>Natural Language Processing</li>
+                        <li>Machine Learning</li>
+                    </ul>
+
+                    <p class="skill-note">
+                        Self-study alongside coursework.
+                    </p>
+                </div>
+
+                <div class="skill-card skill-card-invert">
+                    <div class="skill-card-head">
+                        <h3>Language &amp; Certifications</h3>
+                        <span class="skill-index" aria-hidden="true">03</span>
+                    </div>
+
+                    <ul class="skill-scores">
+                        <li>
+                            <div class="skill-score-row">
+                                <span>IELTS</span>
+                                <span class="skill-score">7.0</span>
+                            </div>
+                            <p>Professional level</p>
+                        </li>
+
+                        <li>
+                            <div class="skill-score-row">
+                                <span>UKBI</span>
+                                <span class="skill-score">701</span>
+                            </div>
+                            <p>Mother tongue</p>
+                        </li>
+                    </ul>
+                </div>
+            </div>
         </div>
-    </footer>
-</body>
-</html>
+    </section>
+
+    <section class="projects section" id="projects">
+        <div class="container">
+            <div class="section-heading">
+                <p class="section-kicker">Selected work</p>
+                <h2>Projects</h2>
+            </div>
+
+            <div class="project-grid">
+                <article class="project-card project-card-featured">
+                    <div class="project-number" aria-hidden="true">01</div>
+
+                    <div class="project-content">
+                        <p class="project-type">Web Development</p>
+                        <h3>Personal Portfolio</h3>
+
+                        <p>
+                            A responsive personal website built to showcase my
+                            profile, projects, and technical skills.
+                        </p>
+
+                        <ul
+                            class="tag-list"
+                            aria-label="Technologies used"
+                        >
+                            <li>HTML</li>
+                            <li>CSS</li>
+                            <li>Django</li>
+                        </ul>
+
+                        <a
+                            class="project-link"
+                            href="https://muhammad-syamil51-myportofolio.pws.cs.ui.ac.id/"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                        >
+                            View project
+                            <span aria-hidden="true">&rarr;</span>
+                        </a>
+                    </div>
+                </article>
+
+                <article class="project-card project-robotic">
+                    <div class="project-number" aria-hidden="true">02</div>
+
+                    <div class="project-content">
+                        <p class="project-type">Robotic</p>
+                        <h3>Portable Air Quality Detector</h3>
+
+                        <p>
+                            Arduino based portable carbon emission
+                            (CO2 &amp; Hydrocarbon) detector.
+                        </p>
+
+                        <ul
+                            class="tag-list"
+                            aria-label="Technologies used"
+                        >
+                            <li>Arduino</li>
+                            <li>IoT</li>
+                            <li>ESP32</li>
+                        </ul>
+
+                        <a
+                            class="project-link"
+                            href="https://github.com/Samuell487/Arduino-Based-Smart-Emission-Monitoring-System"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                        >
+                            View project
+                            <span aria-hidden="true">&rarr;</span>
+                        </a>
+                    </div>
+                </article>
+            </div>
+        </div>
+    </section>
+
+    <section class="experience section" id="experience">
+        <div class="container experience-layout">
+            <div class="section-heading experience-heading">
+                <p class="section-kicker">Where I've been</p>
+                <h2>Experience</h2>
+                <p>
+                    Roles, organisations, and teams I have worked with so far.
+                </p>
+            </div>
+
+            <div class="experience-groups">
+                <div class="experience-group">
+                    <h3>STAFF</h3>
+
+                    <div class="experience-meta">
+                        <span>COMPFEST 18</span>
+                        <span class="experience-date">
+                            2026 &ndash; present
+                        </span>
+                    </div>
+
+                    <p>
+                        Design, manage, and evaluate challenges that test
+                        participants' abilities to transform raw data into
+                        actionable insights. We create real-world problem
+                        statements, curate complex datasets, establish clear
+                        evaluation metrics, and coordinate mentoring and
+                        judging panels to identify top analytical talent.
+                    </p>
+                </div>
+
+                <div class="experience-group">
+                    <h3>STAFF</h3>
+
+                    <div class="experience-meta">
+                        <span>BEM FASILKOM UI</span>
+                        <span class="experience-date">
+                            2026 &ndash; present
+                        </span>
+                    </div>
+
+                    <p>
+                        Organize student activities, fundraisers, and community
+                        welfare initiatives.
+                    </p>
+                </div>
+
+                <div class="experience-group">
+                    <h3>MENTOR</h3>
+
+                    <div class="experience-meta">
+                        <span>DDP 0</span>
+                        <span class="experience-date">2026</span>
+                    </div>
+
+                    <p>
+                        Experienced in guiding learners through core programming
+                        fundamentals, troubleshooting complex bugs, and
+                        fostering a supportive environment for technical
+                        growth. Combines hands-on coding skills with a strong
+                        commitment to community learning and team collaboration.
+                    </p>
+                </div>
+
+                <div class="experience-group">
+                    <h3>UI/UX DESIGNER</h3>
+
+                    <div class="experience-meta">
+                        <span>Pandu Nyawa</span>
+                        <span class="experience-date">2024</span>
+                    </div>
+
+                    <p>
+                        UI/UX Designer creating accessible, patient-centric, and
+                        clinician-focused digital healthcare products.
+                        Combining deep user empathy with data-driven design to
+                        simplify complex medical workflows.
+                    </p>
+                </div>
+
+                <div class="experience-group">
+                    <h3>LEADER</h3>
+
+                    <div class="experience-meta">
+                        <span>MAN 4 Jakarta Robotic Team</span>
+                        <span class="experience-date">2024</span>
+                    </div>
+
+                    <p>
+                        Robotics Team Lead directing cross-functional
+                        engineering teams to design, build, and deploy
+                        autonomous systems and intelligent machinery.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </section>
+</main>
+{% endblock content %}

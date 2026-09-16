@@ -810,4 +810,237 @@ img {
         font-size: 0.85rem;
         font-weight: 600;
     }
+
+}
+
+/* ---------- Achievements ---------- */
+
+.achievement-page {
+    padding: 4rem 0;
+}
+
+.achievement-toolbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+.achievement-toolbar h1 {
+    margin: 0;
+}
+
+.achievement-search {
+    display: flex;
+    gap: 0.75rem;
+    margin-bottom: 1.5rem;
+}
+
+.achievement-search input {
+    flex: 1;
+    min-width: 0;
+}
+
+.achievements-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1.25rem;
+}
+
+.achievements-card {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    padding: 1.5rem;
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    background: #fff;
+    overflow-wrap: anywhere;
+}
+
+.achievements-card h2 {
+    margin: 1rem 0 0.5rem;
+}
+
+.achievements-image {
+    display: block;
+    width: 100%;
+    height: auto;
+    border-radius: var(--radius);
+}
+
+.achievements-description,
+.achievement-page .empty-state {
+    color: var(--text-muted);
+}
+
+.achievement-card-actions {
+    margin-top: auto;
+    padding-top: 1rem;
+}
+
+.achievement-button {
+    display: inline-block;
+    padding: 0.7rem 1rem;
+    border: 0;
+    border-radius: var(--radius);
+    background: var(--accent);
+    color: #fff;
+    font: inherit;
+    font-weight: 700;
+    text-decoration: none;
+    text-align: center;
+    cursor: pointer;
+}
+
+.achievement-button-secondary {
+    background: var(--ink);
+}
+
+.achievement-button-danger {
+    background: #b42318;
+}
+
+/* Form */
+
+.achievement-form {
+    width: 100%;
+    margin-top: 1.5rem;
+}
+
+.achievement-form .form-group {
+    margin-bottom: 1.25rem;
+}
+
+.achievement-form label {
+    display: block;
+    margin-bottom: 0.4rem;
+    font-weight: 700;
+}
+
+.achievement-form input,
+.achievement-form textarea,
+.achievement-search input {
+    box-sizing: border-box;
+    width: 100%;
+    padding: 0.75rem;
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    background: #fff;
+    color: var(--ink);
+    font: inherit;
+}
+
+.achievement-form textarea {
+    resize: vertical;
+}
+
+.achievement-form input:focus,
+.achievement-form textarea:focus,
+.achievement-search input:focus {
+    outline: 2px solid var(--accent);
+    border-color: var(--accent);
+}
+
+.achievement-form .form-error {
+    color: #b42318;
+    font-size: 0.85rem;
+    margin-top: 0.35rem;
+}
+
+/* Konfirmasi hapus */
+
+.achievement-delete-modal {
+    display: none;
+    position: fixed;
+    inset: 0;
+    box-sizing: border-box;
+    width: 100%;
+    height: 100%;
+    max-width: none;
+    max-height: none;
+    margin: 0;
+    padding: 1rem;
+    border: 0;
+    background: transparent;
+    align-items: center;
+    justify-content: center;
+}
+
+.achievement-delete-modal:popover-open {
+    display: flex;
+}
+
+.achievement-delete-backdrop {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    padding: 0;
+    border: 0;
+    background: rgb(0 0 0 / 55%);
+}
+
+.achievement-delete-content {
+    position: relative;
+    box-sizing: border-box;
+    width: min(100%, 480px);
+    max-height: 100%;
+    overflow: auto;
+    padding: 1.5rem;
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    background: var(--paper);
+    color: var(--ink);
+    box-shadow: 0 16px 48px rgb(0 0 0 / 20%);
+}
+
+.achievement-delete-content h2 {
+    margin: 0 0 1rem;
+}
+
+.achievement-actions {
+    display: flex;
+    justify-content: flex-end;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    margin-top: 1.5rem;
+}
+
+/* Pesan berhasil dari base.html */
+
+.message {
+    padding: 0.8rem 1rem;
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+}
+
+.message-success {
+    background: #e9f7ee;
+    color: #165b33;
+}
+
+@media (max-width: 600px) {
+    .achievements-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .achievement-toolbar,
+    .achievement-search {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .achievement-search input {
+        flex: auto;
+    }
+
+    .achievement-actions {
+        flex-direction: column;
+    }
+
+    .achievement-actions .achievement-button {
+        width: 100%;
+    }
 }

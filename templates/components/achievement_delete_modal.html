@@ -1,0 +1,58 @@
+<button
+    type="button"
+    class="achievement-button achievement-button-danger"
+    popovertarget="delete-achievement-{{ achievement.id }}"
+>
+    Hapus Prestasi
+</button>
+
+<div
+    id="delete-achievement-{{ achievement.id }}"
+    class="achievement-delete-modal"
+    popover="auto"
+    role="dialog"
+    aria-labelledby="delete-heading-{{ achievement.id }}"
+>
+    <button
+        type="button"
+        class="achievement-delete-backdrop"
+        popovertarget="delete-achievement-{{ achievement.id }}"
+        popovertargetaction="hide"
+        aria-label="Tutup konfirmasi"
+    ></button>
+
+    <div class="achievement-delete-content">
+        <h2 id="delete-heading-{{ achievement.id }}">
+            Hapus prestasi ini?
+        </h2>
+
+        <p>
+            Konfirmasi penghapusan
+            <strong>{{ achievement.title }}</strong>.
+        </p>
+
+        <div class="achievement-actions">
+            <button
+                type="button"
+                class="achievement-button achievement-button-secondary"
+                popovertarget="delete-achievement-{{ achievement.id }}"
+                popovertargetaction="hide"
+            >
+                Batal
+            </button>
+
+            <form
+                method="post"
+                action="{% url 'main:delete_achievement' achievement.id %}"
+            >
+                {% csrf_token %}
+                <button
+                    type="submit"
+                    class="achievement-button achievement-button-danger"
+                >
+                    Ya, hapus
+                </button>
+            </form>
+        </div>
+    </div>
+</div>
