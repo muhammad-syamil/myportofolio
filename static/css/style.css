@@ -1075,3 +1075,40 @@ border-top: 1px solid var(--line);
 .experience-actions form {
     margin: 0;
 }
+
+.experience-filters {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    gap: 1rem;
+    margin-top: 1.5rem;
+}
+
+.experience-filters > div {
+    flex: 1 1 180px;
+    min-width: 0;
+}
+
+.experience-filters label {
+    display: block;
+    margin-bottom: 0.4rem;
+    font-weight: 700;
+}
+
+.experience-filters input,
+.experience-filters select {
+    box-sizing: border-box;
+    width: 100%;
+    padding: 0.75rem;
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    background: #fff;
+    color: var(--ink);
+    font: inherit;
+}
+
+.experience-filters input:focus,
+.experience-filters select:focus {
+    outline: 2px solid var(--accent);
+    border-color: var(--accent);
+}

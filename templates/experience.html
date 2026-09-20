@@ -16,6 +16,32 @@
                 Tambah Experience
             </a>
 
+            <form method="get" action="{% url 'main:show_experience' %}" class="experience-filters">
+                <div>
+                    <label for="experience-search">Cari judul</label>
+                    <input id="experience-search" type="search" name="title" value="{{ title_query }}" placeholder="Cari pengalaman...">
+                </div>
+                <div>
+                    <label for="experience-category">Kategori</label>
+                    <select id="experience-category" name="category">
+                        <option value="">Semua kategori</option>
+                        {% for value, label in category_choices %}
+                            <option value="{{ value }}" {% if selected_category == value %}selected{% endif %}>{{ label }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div>
+                    <label for="experience-status-filter">Status</label>
+                    <select id="experience-status-filter" name="status">
+                        <option value="">Semua status</option>
+                        <option value="ongoing" {% if selected_status == 'ongoing' %}selected{% endif %}>Masih aktif</option>
+                        <option value="completed" {% if selected_status == 'completed' %}selected{% endif %}>Selesai</option>
+                    </select>
+                </div>
+                <button type="submit" class="achievement-button">Cari / Filter</button>
+                <a href="{% url 'main:show_experience' %}" class="achievement-button achievement-button-secondary">Reset filter</a>
+            </form>
+
             <div class="experience-grid">
                 {% for experience in experience_list %}
                     <article class="experience-card">
@@ -49,19 +75,16 @@
                                 Edit
                             </a>
 
-                            <form method="post"
-                                  action="{% url 'main:delete_experience' experience.id %}">
-                                {% csrf_token %}
-                                <button type="submit"
-                                        class="achievement-button achievement-button-danger">
-                                    Hapus
-                                </button>
-                            </form>
+                            {% include "components/experience_delete_modal.html" with experience=experience %}
                         </div>
                     </article>
                 {% empty %}
                     <p class="empty-state">
-                        Belum ada pengalaman yang ditambahkan.
+                        {% if has_filters %}
+                            Tidak ada pengalaman yang sesuai. Coba ubah atau reset filter.
+                        {% else %}
+                            Belum ada pengalaman yang ditambahkan.
+                        {% endif %}
                     </p>
                 {% endfor %}
             </div>

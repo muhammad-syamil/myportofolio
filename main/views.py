@@ -34,6 +34,11 @@ def show_experience(request):
     return render(request, "experience.html", {
         "name": "Muhammad Syamil",
         "experience_list": experience_list,
+        "title_query": request.GET.get("title", "").strip(),
+        "selected_category": request.GET.get("category", ""),
+        "selected_status": request.GET.get("status", ""),
+        "category_choices": Experience.EXPERIENCE_CHOICES,
+        "has_filters": any(request.GET.get(key, "").strip() for key in ("title", "category", "status")),
     })
 
 def get_achievements_json(request):
@@ -101,6 +106,17 @@ def delete_achievement(request, achievement_id):
 
 def get_experience_json(request):
     experiences = Experience.objects.all()
+    title_query = request.GET.get("title", "").strip()
+    category = request.GET.get("category", "")
+    status = request.GET.get("status", "")
+
+    if title_query:
+        experiences = experiences.filter(title__icontains=title_query)
+    if category:
+        experiences = experiences.filter(category=category)
+    if status in ("ongoing", "completed"):
+        experiences = experiences.filter(ended_at__isnull=status == "ongoing")
+
     data = serializers.serialize("json", experiences)
     return HttpResponse(data, content_type="application/json")
 
@@ -111,6 +127,7 @@ def create_experience(request):
 
     if request.method == "POST" and form.is_valid():
         form.save()
+        messages.success(request, "Experience berhasil ditambahkan!")
         return redirect("main:show_experience")
 
     return render(request, "experience_form.html", {
@@ -129,6 +146,7 @@ def update_experience(request, experience_id):
 
     if request.method == "POST" and form.is_valid():
         form.save()
+        messages.success(request, "Experience berhasil diperbarui!")
         return redirect("main:show_experience")
 
     return render(request, "experience_form.html", {
@@ -142,5 +160,6 @@ def delete_experience(request, experience_id):
 
     if request.method == "POST":
         experience.delete()
+        messages.success(request, "Experience berhasil dihapus!")
 
     return redirect("main:show_experience")

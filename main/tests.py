@@ -58,6 +58,55 @@ class MainTest(TestCase):
         self.assertNotContains(response, "Sedang berlangsung")
 
 
+class ExperienceFeaturesTest(TestCase):
+    def setUp(self):
+        self.active = Experience.objects.create(
+            title="Mentor Python", description="Mengajar", category="volunteer"
+        )
+        Experience.objects.create(
+            title="Mentor Java", description="Mengajar", category="volunteer",
+            ended_at=timezone.now(),
+        )
+        Experience.objects.create(
+            title="Mentor Python Internship", description="Magang", category="internship"
+        )
+
+    def test_combined_filters_match_json_and_page(self):
+        filters = {"title": " python ", "category": "volunteer", "status": "ongoing"}
+        response = self.client.get(reverse("main:get_experience_json"), filters)
+        self.assertEqual([item["pk"] for item in response.json()], [str(self.active.pk)])
+        page = self.client.get(reverse("main:show_experience"), filters)
+        self.assertEqual([item.pk for item in page.context["experience_list"]], [self.active.pk])
+        self.assertContains(page, 'value="volunteer" selected')
+        self.assertContains(page, 'value="ongoing" selected')
+
+    def test_completed_filter_and_empty_results(self):
+        response = self.client.get(reverse("main:get_experience_json"), {"status": "completed"})
+        self.assertEqual([item["fields"]["title"] for item in response.json()], ["Mentor Java"])
+        page = self.client.get(reverse("main:show_experience"), {"title": "Tidak cocok"})
+        self.assertContains(page, "Tidak ada pengalaman yang sesuai")
+
+    def test_create_update_and_delete_messages(self):
+        data = {"title": "Pengalaman baru", "description": "Deskripsi", "category": "research", "thumbnail": ""}
+        response = self.client.post(reverse("main:create_experience"), data, follow=True)
+        self.assertContains(response, "Experience berhasil ditambahkan!")
+        experience = Experience.objects.get(title=data["title"])
+        count = Experience.objects.count()
+        data["title"] = "Pengalaman diperbarui"
+        response = self.client.post(reverse("main:update_experience", args=[experience.pk]), data, follow=True)
+        self.assertContains(response, "Experience berhasil diperbarui!")
+        self.assertEqual(Experience.objects.count(), count)
+        experience.refresh_from_db()
+        self.assertEqual(experience.title, data["title"])
+        delete_url = reverse("main:delete_experience", args=[experience.pk])
+        self.client.get(delete_url)
+        self.assertTrue(Experience.objects.filter(pk=experience.pk).exists())
+        self.assertContains(response, f'popovertarget="delete-experience-{experience.pk}"')
+        response = self.client.post(delete_url, follow=True)
+        self.assertContains(response, "Experience berhasil dihapus!")
+        self.assertFalse(Experience.objects.filter(pk=experience.pk).exists())
+
+
 class AchievementsTest(TestCase):
     def test_achievements_url_and_template(self):
         response = self.client.get(reverse("main:show_achievements"))

@@ -1,0 +1,25 @@
+<button type="button" class="achievement-button achievement-button-danger"
+        popovertarget="delete-experience-{{ experience.id }}">
+    Hapus
+</button>
+
+<div id="delete-experience-{{ experience.id }}" class="achievement-delete-modal"
+     popover="auto" role="dialog" aria-labelledby="delete-experience-heading-{{ experience.id }}">
+    <button type="button" class="achievement-delete-backdrop"
+            popovertarget="delete-experience-{{ experience.id }}"
+            popovertargetaction="hide" aria-label="Tutup konfirmasi"></button>
+    <div class="achievement-delete-content">
+        <h2 id="delete-experience-heading-{{ experience.id }}">Hapus experience ini?</h2>
+        <p>Yakin ingin menghapus <strong>{{ experience.title }}</strong>? Data yang dihapus tidak dapat dikembalikan.</p>
+        <div class="achievement-actions">
+            <button type="button" class="achievement-button achievement-button-secondary"
+                    popovertarget="delete-experience-{{ experience.id }}" popovertargetaction="hide" autofocus>
+                Batal
+            </button>
+            <form method="post" action="{% url 'main:delete_experience' experience.id %}">
+                {% csrf_token %}
+                <button type="submit" class="achievement-button achievement-button-danger">Ya, hapus</button>
+            </form>
+        </div>
+    </div>
+</div>
