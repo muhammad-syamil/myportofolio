@@ -757,61 +757,62 @@ img {
         text-align: left;
     }
 
-    .experience-section {
-    padding: 4rem 0;
-    border-top: 1px solid var(--line);
-    }
-
-    .section-kicker {
-        color: var(--accent-dark);
-        font-size: 0.8rem;
-        font-weight: 700;
-        letter-spacing: 0.08em;
-        text-transform: uppercase;
-    }
-
-    .experience-section h1 {
-        margin: 0.4rem 0 1.5rem;
-        font-size: 2rem;
-    }
-
-    .experience-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-        gap: 1rem;
-    }
-
-    .experience-card {
-        padding: 1.25rem;
-        background-color: #fff;
-        border: 1px solid var(--line);
-        border-radius: var(--radius);
-    }
-
-    .experience-category {
-        color: var(--accent-dark);
-        font-size: 0.75rem;
-        font-weight: 700;
-        text-transform: uppercase;
-    }
-
-    .experience-card h2 {
-        margin: 0.5rem 0;
-        font-size: 1.25rem;
-    }
-
-    .experience-description,
-    .empty-state {
-        color: var(--text-muted);
-    }
-
-    .experience-status {
-        margin-top: 1rem;
-        font-size: 0.85rem;
-        font-weight: 600;
-    }
-
 }
+
+.experience-section {
+padding: 4rem 0;
+border-top: 1px solid var(--line);
+}
+
+.section-kicker {
+    color: var(--accent-dark);
+    font-size: 0.8rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+
+.experience-section h1 {
+    margin: 0.4rem 0 1.5rem;
+    font-size: 2rem;
+}
+
+.experience-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 1rem;
+}
+
+.experience-card {
+    padding: 1.25rem;
+    background-color: #fff;
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+}
+
+.experience-category {
+    color: var(--accent-dark);
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+}
+
+.experience-card h2 {
+    margin: 0.5rem 0;
+    font-size: 1.25rem;
+}
+
+.experience-description,
+.empty-state {
+    color: var(--text-muted);
+}
+
+.experience-status {
+    margin-top: 1rem;
+    font-size: 0.85rem;
+    font-weight: 600;
+}
+
 
 /* ---------- Achievements ---------- */
 
@@ -921,6 +922,7 @@ img {
 
 .achievement-form input,
 .achievement-form textarea,
+.achievement-form select,
 .achievement-search input {
     box-sizing: border-box;
     width: 100%;
@@ -938,6 +940,7 @@ img {
 
 .achievement-form input:focus,
 .achievement-form textarea:focus,
+.achievement-form select:focus,
 .achievement-search input:focus {
     outline: 2px solid var(--accent);
     border-color: var(--accent);
@@ -1043,4 +1046,32 @@ img {
     .achievement-actions .achievement-button {
         width: 100%;
     }
+}
+
+.experience-section .experience-grid {
+    margin-top: 1.5rem;
+    grid-template-columns: repeat(
+        auto-fit,
+        minmax(min(100%, 280px), 1fr)
+    );
+}
+
+.experience-section .experience-card {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    overflow-wrap: anywhere;
+}
+
+.experience-actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.75rem;
+    margin-top: auto;
+    padding-top: 1rem;
+}
+
+.experience-actions form {
+    margin: 0;
 }

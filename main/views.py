@@ -3,7 +3,7 @@ from django.core import serializers
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
 
-from main.forms import AchievementForm
+from main.forms import AchievementForm, ExperienceForm
 from main.models import Experience, Achievements
 
 
@@ -21,11 +21,20 @@ def show_main(request):
 
 
 def show_experience(request):
-    context = {
+    response = get_experience_json(request)
+
+    experience_list = [
+        item.object
+        for item in serializers.deserialize(
+            "json",
+            response.content.decode("utf-8"),
+        )
+    ]
+
+    return render(request, "experience.html", {
         "name": "Muhammad Syamil",
-        "experience_list": Experience.objects.all(),
-    }
-    return render(request, "experience.html", context)
+        "experience_list": experience_list,
+    })
 
 def get_achievements_json(request):
     title_query = request.GET.get("title", "").strip()
@@ -89,3 +98,49 @@ def delete_achievement(request, achievement_id):
         return redirect("main:show_achievements")
 
     return redirect("main:show_achievements")
+
+def get_experience_json(request):
+    experiences = Experience.objects.all()
+    data = serializers.serialize("json", experiences)
+    return HttpResponse(data, content_type="application/json")
+
+def create_experience(request):
+    form = ExperienceForm(
+        request.POST if request.method == "POST" else None
+    )
+
+    if request.method == "POST" and form.is_valid():
+        form.save()
+        return redirect("main:show_experience")
+
+    return render(request, "experience_form.html", {
+        "name": "Muhammad Syamil",
+        "form": form,
+        "page_title": "Tambah Experience",
+    })
+
+def update_experience(request, experience_id):
+    experience = get_object_or_404(Experience, pk=experience_id)
+
+    form = ExperienceForm(
+        request.POST if request.method == "POST" else None,
+        instance=experience,
+    )
+
+    if request.method == "POST" and form.is_valid():
+        form.save()
+        return redirect("main:show_experience")
+
+    return render(request, "experience_form.html", {
+        "name": "Muhammad Syamil",
+        "form": form,
+        "page_title": "Edit Experience",
+    })
+
+def delete_experience(request, experience_id):
+    experience = get_object_or_404(Experience, pk=experience_id)
+
+    if request.method == "POST":
+        experience.delete()
+
+    return redirect("main:show_experience")
