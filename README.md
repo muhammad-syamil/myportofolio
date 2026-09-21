@@ -33,3 +33,5 @@ Saya menggunakan claude untuk membantu membuat gambaran design secara garis besa
 2. Data lebih baik disimpan dalam database melalui model supaya masing-masing berdiri secara independen. Sehingga, data mudah untuk diubah, ditambah, dan dihapus tanpa mengubah ubah HTML nya. Hal ini juga memudahkan untuk pemelihraan aplikasi. Pengembangan fitur seperti pencarian, filter, dll juga lebih mudah karena datanya terstruktur.
 
 3. makemigrations membuat berkas migrasi yang berisi catatan perubahan model, sedangkan migrate adalah command untuk menerapkan perubahan tersebut ke database. Contohnya, ketika menambahkan field image_url pada model Achievements, makemigrations dan migrate perlu dijalankan agar kolom baru tersedia di database.
+
+### Tugas 3

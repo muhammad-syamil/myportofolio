@@ -1112,3 +1112,58 @@ border-top: 1px solid var(--line);
     outline: 2px solid var(--accent);
     border-color: var(--accent);
 }
+
+/* Interaksi sederhana halaman Experience dan form tambah/edit */
+.experience-section .experience-card {
+    transition: border-color 180ms ease, box-shadow 180ms ease;
+}
+
+:is(.experience-section, .experience-form-page) .achievement-button {
+    transition: filter 150ms ease, transform 150ms ease;
+}
+
+:is(.experience-section, .experience-form-page) :is(input, select, textarea) {
+    transition: border-color 150ms ease, box-shadow 150ms ease;
+}
+
+.experience-section .experience-card:focus-within {
+    border-color: var(--accent);
+    box-shadow: 0 4px 16px rgb(28 25 23 / 8%);
+}
+
+:is(.experience-section, .experience-form-page) :is(a, button):focus-visible {
+    outline: 2px solid var(--accent-dark);
+    outline-offset: 4px;
+}
+
+:is(.experience-section, .experience-form-page) :is(input, select, textarea):focus {
+    box-shadow: 0 0 0 3px rgb(217 93 57 / 15%);
+}
+
+@media (hover: hover) and (pointer: fine) {
+    .experience-section .experience-card:hover {
+        border-color: var(--accent);
+        box-shadow: 0 4px 16px rgb(28 25 23 / 8%);
+    }
+
+    :is(.experience-section, .experience-form-page) .achievement-button:hover {
+        filter: brightness(0.9);
+        transform: translateY(-2px);
+    }
+}
+
+:is(.experience-section, .experience-form-page) .achievement-button:active {
+    transform: translateY(1px);
+    filter: brightness(0.85);
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .experience-section .experience-card,
+    :is(.experience-section, .experience-form-page) :is(.achievement-button, input, select, textarea) {
+        transition: none;
+    }
+
+    :is(.experience-section, .experience-form-page) .achievement-button {
+        transform: none;
+    }
+}
