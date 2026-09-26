@@ -10,6 +10,7 @@ from main.views import (
     create_experience,
     update_experience,
     delete_experience,
+    toggle_experience_star,
     get_experience_json,
     login_user,
     logout_user,
@@ -61,6 +62,11 @@ urlpatterns = [
         "experience/<uuid:experience_id>/delete/",
         delete_experience,
         name="delete_experience",
+    ),
+    path(
+        "experience/<uuid:experience_id>/star/",
+        toggle_experience_star,
+        name="toggle_experience_star",
     ),
     path(
         "api/experience/",

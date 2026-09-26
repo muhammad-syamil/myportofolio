@@ -8,9 +8,14 @@ from django.core import serializers
 from django.core.exceptions import PermissionDenied
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
+from django.views.decorators.http import require_POST
 
 from main.forms import AchievementForm, ExperienceForm
 from main.models import Experience, Achievements
+
+
+def _is_editor(user):
+    return user.groups.filter(name="Editor").exists()
 
 
 def show_main(request):
@@ -201,7 +206,11 @@ def get_experience_json(request):
     data = serializers.serialize("json", experiences)
     return HttpResponse(data, content_type="application/json")
 
+@login_required(login_url="/login/")
 def create_experience(request):
+    if not request.user.is_superuser:
+        raise PermissionDenied
+
     form = ExperienceForm(
         request.POST if request.method == "POST" else None
     )
@@ -217,7 +226,11 @@ def create_experience(request):
         "page_title": "Tambah Experience",
     })
 
+@login_required(login_url="/login/")
 def update_experience(request, experience_id):
+    if not (request.user.is_superuser or _is_editor(request.user)):
+        raise PermissionDenied
+
     experience = get_object_or_404(Experience, pk=experience_id)
 
     form = ExperienceForm(
@@ -236,11 +249,28 @@ def update_experience(request, experience_id):
         "page_title": "Edit Experience",
     })
 
+@login_required(login_url="/login/")
 def delete_experience(request, experience_id):
+    if not request.user.is_superuser:
+        raise PermissionDenied
+
     experience = get_object_or_404(Experience, pk=experience_id)
 
     if request.method == "POST":
         experience.delete()
         messages.success(request, "Experience berhasil dihapus!")
+
+    return redirect("main:show_experience")
+
+
+@login_required(login_url="/login/")
+@require_POST
+def toggle_experience_star(request, experience_id):
+    experience = get_object_or_404(Experience, pk=experience_id)
+
+    if request.user in experience.starred_by.all():
+        experience.starred_by.remove(request.user)
+    else:
+        experience.starred_by.add(request.user)
 
     return redirect("main:show_experience")

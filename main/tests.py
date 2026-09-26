@@ -1,3 +1,4 @@
+from django.contrib.auth.models import Group, User
 from django.test import TestCase
 from django.urls import reverse
 from django.utils import timezone
@@ -60,6 +61,11 @@ class MainTest(TestCase):
 
 class ExperienceFeaturesTest(TestCase):
     def setUp(self):
+        self.owner = User.objects.create_superuser(
+            username="portfolio_owner",
+            password="test-password",
+        )
+        self.client.force_login(self.owner)
         self.active = Experience.objects.create(
             title="Mentor Python", description="Mengajar", category="volunteer"
         )
@@ -105,6 +111,80 @@ class ExperienceFeaturesTest(TestCase):
         response = self.client.post(delete_url, follow=True)
         self.assertContains(response, "Experience berhasil dihapus!")
         self.assertFalse(Experience.objects.filter(pk=experience.pk).exists())
+
+
+class ExperienceAuthorizationTest(TestCase):
+    def setUp(self):
+        self.experience = Experience.objects.create(
+            title="Backend Developer",
+            description="Membangun layanan web.",
+            category="internship",
+        )
+        self.regular_user = User.objects.create_user(username="regular")
+        self.editor = User.objects.create_user(username="editor")
+        editor_group = Group.objects.create(name="Editor")
+        self.editor.groups.add(editor_group)
+
+        self.create_url = reverse("main:create_experience")
+        self.update_url = reverse(
+            "main:update_experience",
+            args=[self.experience.pk],
+        )
+        self.delete_url = reverse(
+            "main:delete_experience",
+            args=[self.experience.pk],
+        )
+        self.star_url = reverse(
+            "main:toggle_experience_star",
+            args=[self.experience.pk],
+        )
+
+    def test_anonymous_actions_redirect_to_login(self):
+        protected_requests = (
+            self.client.get(self.create_url),
+            self.client.get(self.update_url),
+            self.client.post(self.delete_url),
+            self.client.post(self.star_url),
+        )
+
+        for response in protected_requests:
+            self.assertEqual(response.status_code, 302)
+            self.assertTrue(response.url.startswith("/login/?next="))
+
+    def test_regular_user_can_only_toggle_star(self):
+        self.client.force_login(self.regular_user)
+
+        self.assertEqual(self.client.get(self.create_url).status_code, 403)
+        self.assertEqual(self.client.get(self.update_url).status_code, 403)
+        self.assertEqual(self.client.post(self.delete_url).status_code, 403)
+        self.assertEqual(self.client.get(self.star_url).status_code, 405)
+
+        self.client.post(self.star_url)
+        self.assertTrue(
+            self.experience.starred_by.filter(pk=self.regular_user.pk).exists()
+        )
+
+        self.client.post(self.star_url)
+        self.assertFalse(
+            self.experience.starred_by.filter(pk=self.regular_user.pk).exists()
+        )
+
+    def test_editor_can_update_but_cannot_create_or_delete(self):
+        self.client.force_login(self.editor)
+        updated_data = {
+            "title": "Senior Backend Developer",
+            "description": self.experience.description,
+            "category": self.experience.category,
+            "thumbnail": "",
+        }
+
+        self.assertEqual(self.client.get(self.create_url).status_code, 403)
+        response = self.client.post(self.update_url, updated_data)
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(self.client.post(self.delete_url).status_code, 403)
+
+        self.experience.refresh_from_db()
+        self.assertEqual(self.experience.title, updated_data["title"])
 
 
 class AchievementsTest(TestCase):
