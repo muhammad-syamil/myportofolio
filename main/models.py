@@ -1,4 +1,6 @@
 import uuid
+
+from django.contrib.auth.models import User
 from django.db import models
 
 class Experience(models.Model):
@@ -30,6 +32,11 @@ class Achievements(models.Model):
     description = models.TextField()
     field = models.CharField(max_length=255)
     image_url = models.URLField(blank=True, default="")
+    starred_by = models.ManyToManyField(
+        User,
+        related_name="starred_achievements",
+        blank=True,
+    )
 
     def __str__(self):
         return self.title

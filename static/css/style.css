@@ -383,6 +383,39 @@ img {
     }
 }
 
+.star-form {
+    display: inline;
+}
+
+.button-star {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    background: var(--ink);
+}
+
+.button-star.is-starred {
+    background: var(--accent);
+}
+
+.star-count {
+    padding: 0.05rem 0.4rem;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.25);
+    font-size: 0.8rem;
+}
+
+.form-help {
+    margin-top: 0.35rem;
+    color: var(--text-muted);
+    font-size: 0.85rem;
+}
+
+.form-help ul {
+    margin: 0.35rem 0 0;
+    padding-left: 1.25rem;
+}
+
 /* ---------- Projects ---------- */
 
 .projects {
@@ -856,7 +889,7 @@ border-top: 1px solid var(--line);
     padding: 1.5rem;
     border: 1px solid var(--line);
     border-radius: var(--radius);
-    background: #fff;
+    background: #ffffff;
     overflow-wrap: anywhere;
 }
 

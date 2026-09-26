@@ -10,12 +10,14 @@
         <div class="achievement-toolbar">
             <h1>Achievements</h1>
 
-            <a
-                href="{% url 'main:create_achievement' %}"
-                class="achievement-button"
-            >
-                + Tambah Prestasi
-            </a>
+            {% if user.is_superuser %}
+                <a
+                    href="{% url 'main:create_achievement' %}"
+                    class="achievement-button"
+                >
+                    + Tambah Prestasi
+                </a>
+            {% endif %}
         </div>
 
         <form
@@ -58,7 +60,10 @@
                     </p>
 
                     <div class="achievement-card-actions">
-                        {% include "components/achievement_delete_modal.html" with achievement=achievement %}
+                        {% include "components/achievement_star.html" with achievement=achievement %}
+                        {% if user.is_superuser %}
+                            {% include "components/achievement_delete_modal.html" with achievement=achievement %}
+                        {% endif %}
                     </div>
                 </article>
             {% empty %}
