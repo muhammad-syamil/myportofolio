@@ -97,6 +97,9 @@ def show_experience(request):
         "selected_status": request.GET.get("status", ""),
         "category_choices": Experience.EXPERIENCE_CHOICES,
         "has_filters": any(request.GET.get(key, "").strip() for key in ("title", "category", "status")),
+        "is_editor": (
+            request.user.is_authenticated and _is_editor(request.user)
+        ),
     })
 
 def get_achievements_json(request):

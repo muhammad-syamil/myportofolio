@@ -124,6 +124,7 @@ class ExperienceAuthorizationTest(TestCase):
         self.editor = User.objects.create_user(username="editor")
         editor_group = Group.objects.create(name="Editor")
         self.editor.groups.add(editor_group)
+        self.owner = User.objects.create_superuser(username="owner")
 
         self.create_url = reverse("main:create_experience")
         self.update_url = reverse(
@@ -185,6 +186,41 @@ class ExperienceAuthorizationTest(TestCase):
 
         self.experience.refresh_from_db()
         self.assertEqual(self.experience.title, updated_data["title"])
+
+    def test_action_controls_follow_user_role(self):
+        response = self.client.get(reverse("main:show_experience"))
+        self.assertNotContains(response, self.create_url)
+        self.assertNotContains(response, self.update_url)
+        self.assertNotContains(response, self.delete_url)
+        self.assertContains(response, self.star_url)
+
+        self.client.force_login(self.regular_user)
+        response = self.client.get(reverse("main:show_experience"))
+        self.assertNotContains(response, self.create_url)
+        self.assertNotContains(response, self.update_url)
+        self.assertNotContains(response, self.delete_url)
+
+        self.client.force_login(self.editor)
+        response = self.client.get(reverse("main:show_experience"))
+        self.assertNotContains(response, self.create_url)
+        self.assertContains(response, self.update_url)
+        self.assertNotContains(response, self.delete_url)
+
+        self.client.force_login(self.owner)
+        response = self.client.get(reverse("main:show_experience"))
+        self.assertContains(response, self.create_url)
+        self.assertContains(response, self.update_url)
+        self.assertContains(response, self.delete_url)
+
+    def test_page_displays_star_status_and_count(self):
+        self.client.force_login(self.regular_user)
+        self.client.post(self.star_url)
+
+        response = self.client.get(reverse("main:show_experience"))
+
+        self.assertContains(response, "Unstar")
+        self.assertContains(response, 'class="star-count">1</span>')
+        self.assertContains(response, "is-starred")
 
 
 class AchievementsTest(TestCase):
