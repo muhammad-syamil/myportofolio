@@ -206,7 +206,18 @@ def get_experience_json(request):
     if status in ("ongoing", "completed"):
         experiences = experiences.filter(ended_at__isnull=status == "ongoing")
 
-    data = serializers.serialize("json", experiences)
+    data = serializers.serialize(
+        "json",
+        experiences,
+        fields=(
+            "title",
+            "description",
+            "category",
+            "thumbnail",
+            "started_at",
+            "ended_at",
+        ),
+    )
     return HttpResponse(data, content_type="application/json")
 
 @login_required(login_url="/login/")

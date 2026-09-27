@@ -113,6 +113,37 @@ class ExperienceFeaturesTest(TestCase):
         self.assertFalse(Experience.objects.filter(pk=experience.pk).exists())
 
 
+class ExperienceJsonSecurityTest(TestCase):
+    def test_json_only_exposes_public_experience_fields(self):
+        user = User.objects.create_user(username="api_user")
+        experience = Experience.objects.create(
+            title="Data Engineer",
+            description="Mengolah data untuk kebutuhan analitik.",
+            category="full-time",
+        )
+        experience.starred_by.add(user)
+
+        response = self.client.get(reverse("main:get_experience_json"))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response["Content-Type"], "application/json")
+        self.assertEqual(len(response.json()), 1)
+        fields = response.json()[0]["fields"]
+        self.assertSetEqual(
+            set(fields),
+            {
+                "title",
+                "description",
+                "category",
+                "thumbnail",
+                "started_at",
+                "ended_at",
+            },
+        )
+        self.assertNotIn("starred_by", fields)
+        self.assertNotContains(response, user.username)
+
+
 class ExperienceAuthorizationTest(TestCase):
     def setUp(self):
         self.experience = Experience.objects.create(
