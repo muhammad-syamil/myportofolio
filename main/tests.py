@@ -58,6 +58,21 @@ class MainTest(TestCase):
         self.assertContains(response, "Selesai")
         self.assertNotContains(response, "Sedang berlangsung")
 
+    def test_navbar_updates_for_active_page_and_authenticated_user(self):
+        response = self.client.get(reverse("main:show_main"))
+
+        self.assertContains(response, 'aria-current="page"')
+        self.assertContains(response, reverse("main:register"))
+        self.assertContains(response, reverse("main:login"))
+
+        user = User.objects.create_user(username="navbar_user")
+        self.client.force_login(user)
+        response = self.client.get(reverse("main:show_main"))
+
+        self.assertContains(response, user.username)
+        self.assertContains(response, reverse("main:logout"))
+        self.assertNotContains(response, reverse("main:register"))
+
 
 class ExperienceFeaturesTest(TestCase):
     def setUp(self):
@@ -293,3 +308,66 @@ class AchievementsTest(TestCase):
             response,
             "Belum ada prestasi yang ditambahkan.",
         )
+
+
+class AchievementAuthorizationTest(TestCase):
+    def setUp(self):
+        self.achievement = Achievements.objects.create(
+            title="Finalis Hackathon",
+            description="Membangun aplikasi bersama tim.",
+            field="Software Engineering",
+        )
+        self.regular_user = User.objects.create_user(username="achievement_user")
+        self.editor = User.objects.create_user(username="achievement_editor")
+        editor_group = Group.objects.create(name="Editor")
+        self.editor.groups.add(editor_group)
+        self.owner = User.objects.create_superuser(username="achievement_owner")
+
+        self.list_url = reverse("main:show_achievements")
+        self.update_url = reverse(
+            "main:update_achievement",
+            args=[self.achievement.pk],
+        )
+
+    def test_only_editor_and_owner_can_update_achievement(self):
+        response = self.client.get(self.update_url)
+        self.assertEqual(response.status_code, 302)
+        self.assertTrue(response.url.startswith("/login/?next="))
+
+        self.client.force_login(self.regular_user)
+        self.assertEqual(self.client.get(self.update_url).status_code, 403)
+
+        self.client.force_login(self.editor)
+        response = self.client.post(
+            self.update_url,
+            {
+                "title": "Juara Hackathon",
+                "description": self.achievement.description,
+                "field": self.achievement.field,
+                "image_url": "",
+            },
+            follow=True,
+        )
+        self.assertContains(response, "Prestasi berhasil diperbarui!")
+        self.achievement.refresh_from_db()
+        self.assertEqual(self.achievement.title, "Juara Hackathon")
+
+        self.client.force_login(self.owner)
+        self.assertEqual(self.client.get(self.update_url).status_code, 200)
+        self.assertContains(self.client.get(self.update_url), "Edit Prestasi")
+
+    def test_edit_button_follows_achievement_role(self):
+        response = self.client.get(self.list_url)
+        self.assertNotContains(response, self.update_url)
+
+        self.client.force_login(self.regular_user)
+        response = self.client.get(self.list_url)
+        self.assertNotContains(response, self.update_url)
+
+        self.client.force_login(self.editor)
+        response = self.client.get(self.list_url)
+        self.assertContains(response, self.update_url)
+
+        self.client.force_login(self.owner)
+        response = self.client.get(self.list_url)
+        self.assertContains(response, self.update_url)

@@ -20,23 +20,44 @@
 
 <body>
     <header class="site-header">
-        <div class="container">
+        <div class="container navbar">
             <a href="{% url 'main:show_main' %}" class="brand">
-                {{ name }}
+                {{ name }}'s Portfolio
             </a>
 
-            <nav>
-                <a href="{% url 'main:show_main' %}">Profile</a>
-                <a href="{% url 'main:show_experience' %}">Experience</a>
-                <a href="{% url 'main:show_achievements' %}">Achievements</a>
+            <nav class="primary-nav" aria-label="Navigasi utama">
+                <a
+                    href="{% url 'main:show_main' %}"
+                    class="nav-link{% if request.resolver_match.url_name == 'show_main' %} is-active{% endif %}"
+                    {% if request.resolver_match.url_name == 'show_main' %}aria-current="page"{% endif %}
+                >Profile</a>
+                <a
+                    href="{% url 'main:show_experience' %}"
+                    class="nav-link{% if request.resolver_match.url_name == 'show_experience' or request.resolver_match.url_name == 'create_experience' or request.resolver_match.url_name == 'update_experience' %} is-active{% endif %}"
+                    {% if request.resolver_match.url_name == 'show_experience' or request.resolver_match.url_name == 'create_experience' or request.resolver_match.url_name == 'update_experience' %}aria-current="page"{% endif %}
+                >Experience</a>
+                <a
+                    href="{% url 'main:show_achievements' %}"
+                    class="nav-link{% if request.resolver_match.url_name == 'show_achievements' or request.resolver_match.url_name == 'create_achievement' or request.resolver_match.url_name == 'update_achievement' %} is-active{% endif %}"
+                    {% if request.resolver_match.url_name == 'show_achievements' or request.resolver_match.url_name == 'create_achievement' or request.resolver_match.url_name == 'update_achievement' %}aria-current="page"{% endif %}
+                >Achievements</a>
+            </nav>
+
+            <div class="nav-actions">
                 {% if user.is_authenticated %}
                     <span class="nav-user">{{ user.username }}</span>
-                    <a href="{% url 'main:logout' %}">Logout</a>
+                    <a href="{% url 'main:logout' %}" class="nav-button nav-button-primary">
+                        Logout
+                    </a>
                 {% else %}
-                    <a href="{% url 'main:login' %}">Login</a>
-                    <a href="{% url 'main:register' %}">Register</a>
+                    <a href="{% url 'main:register' %}" class="nav-button nav-button-secondary">
+                        Register
+                    </a>
+                    <a href="{% url 'main:login' %}" class="nav-button nav-button-primary">
+                        Login
+                    </a>
                 {% endif %}
-            </nav>
+            </div>
         </div>
     </header>
 

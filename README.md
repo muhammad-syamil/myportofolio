@@ -7,7 +7,7 @@ Kelas : PBP D
 ## Features
 
 - Personal profile, skills, projects, dan social media links.
-- Halaman Achievements dengan fitur tambah, pencarian, dan hapus data.
+- Halaman Achievements dengan fitur tambah, pencarian, edit, dan hapus data.
 - Halaman Experience dengan fitur tambah, edit, dan hapus menggunakan form.
 - Pencarian Experience berdasarkan judul serta filter kategori dan status.
 - Konfirmasi sebelum menghapus Experience.
@@ -16,12 +16,18 @@ Kelas : PBP D
 - Deserialisasi JSON sebelum data ditampilkan melalui template Django.
 - Template inheritance menggunakan `base.html`.
 - Responsive layout dengan efek hover dan penanda fokus pada halaman Experience.
+- Registrasi, login, logout, session, dan cookie `last_login`.
+- Hak akses pengunjung, pengguna biasa, Editor, dan superuser.
+- Fitur star/unstar Experience dengan jumlah star per item.
+- Endpoint JSON Experience dengan whitelist field publik.
+- Navbar responsif dengan indikator halaman aktif dan tombol autentikasi.
 
 ## Tech Stack
 
 - Python 3
 - Django
 - Django ModelForm
+- Django Authentication, Group, Session, dan Cookie
 - JSON dan Django serializers
 - HTML5
 - CSS3
@@ -29,7 +35,7 @@ Kelas : PBP D
 
 ## Project Structure
 
-Struktur utama yang digunakan pada Tugas 3:
+Struktur utama proyek:
 
 ```text
 myportofolio/
@@ -51,13 +57,16 @@ myportofolio/
 ├── templates/
 │   ├── components/
 │   │   ├── achievement_delete_modal.html
-│   │   └── experience_delete_modal.html
+│   │   ├── experience_delete_modal.html
+│   │   └── experience_star.html
 │   ├── base.html
 │   ├── index.html
 │   ├── achievements.html
 │   ├── achievement_form.html
 │   ├── experience.html
-│   └── experience_form.html
+│   ├── experience_form.html
+│   ├── login.html
+│   └── register.html
 ├── manage.py
 ├── requirements.txt
 └── README.md
@@ -117,7 +126,21 @@ python manage.py runserver
 Website dapat diakses melalui:
 http://127.0.0.1:8000/
 
-### 7. Run tests
+### 7. Create portfolio owner
+
+Buat akun superuser yang berperan sebagai pemilik portofolio:
+
+```bash
+python manage.py createsuperuser
+```
+
+Setelah server berjalan, buka `http://127.0.0.1:8000/admin/` dan login menggunakan akun tersebut.
+
+### 8. Create an Editor
+
+Melalui Django Admin, buka **Authentication and Authorization → Groups**, buat grup bernama `Editor`, lalu tambahkan akun yang dipilih ke grup tersebut. Nama grup harus ditulis persis `Editor`.
+
+### 9. Run tests
 
 ```bash
 python manage.py test main
@@ -128,13 +151,19 @@ python manage.py test main
 | URL | Fungsi |
 | --- | --- |
 | `/` | Menampilkan profil pribadi |
+| `/register/` | Membuat akun pengguna biasa |
+| `/login/` | Login dan membuat session pengguna |
+| `/logout/` | Logout dan menghapus cookie `last_login` |
+| `/admin/` | Mengelola akun dan grup `Editor` |
 | `/achievements/` | Menampilkan daftar prestasi |
 | `/achievements/add/` | Menambahkan prestasi |
+| `/achievements/<id>/edit/` | Mengedit prestasi sebagai Editor atau superuser |
 | `/api/achievements/` | Mengembalikan data prestasi dalam JSON |
 | `/experience/` | Menampilkan dan memfilter pengalaman |
 | `/experience/add/` | Menambahkan pengalaman |
 | `/experience/<uuid>/edit/` | Mengedit pengalaman berdasarkan ID |
 | `/experience/<uuid>/delete/` | Menghapus pengalaman melalui POST |
+| `/experience/<uuid>/star/` | Memberi atau membatalkan star melalui POST |
 | `/api/experience/` | Mengembalikan data pengalaman dalam JSON |
 
 Parameter pencarian dan filter Experience dapat digunakan pada halaman daftar maupun endpoint JSON:
@@ -153,6 +182,31 @@ Contoh:
 Status pengalaman ditentukan dari `ended_at`: kosong berarti masih berlangsung, sedangkan terisi berarti selesai. Form Experience saat ini belum menyediakan pengubahan tanggal tersebut.
 
 ## Development Progress
+
+### Tugas 4 — Authentication, Session & Cookies
+
+Tugas 4 menerapkan autentikasi dan otorisasi dari Tutorial 4 pada bagian Experience yang dibuat di Tugas 3.
+
+1. **Relasi star**
+   Model `Experience` memiliki relasi `ManyToManyField` bernama `starred_by` ke model `User`. Relasi ini mencegah satu pengguna memberikan lebih dari satu star pada Experience yang sama.
+
+2. **Empat tingkat akses**
+   Pengunjung tetap dapat membaca data. Pengguna biasa dapat star/unstar. Anggota grup `Editor` juga dapat mengedit Experience dan Achievements. Superuser sebagai pemilik portofolio dapat menambah, mengedit, dan menghapus data.
+
+3. **Proteksi server dan template**
+   `login_required` mengarahkan pengunjung ke login, sedangkan aksi tanpa izin menghasilkan HTTP 403. Tombol tambah, edit, dan hapus juga hanya ditampilkan kepada role yang sesuai.
+
+4. **Star berbasis POST**
+   Star dan unstar diproses melalui request POST dengan CSRF token. Halaman menampilkan jumlah star dan status star pengguna yang sedang login.
+
+5. **Keamanan JSON**
+   Endpoint JSON menggunakan whitelist field publik agar relasi `starred_by` dan informasi akun tidak ikut dikirim.
+
+6. **Peningkatan UI/UX**
+   Navbar dibuat responsif dengan susunan brand, navigasi utama, aksi autentikasi, dan indikator halaman aktif. Tampilan diverifikasi pada ukuran desktop dan mobile.
+
+7. **Pengujian**
+   Test mencakup matriks akses seluruh role, perubahan status star, visibilitas tombol, metode POST, serta keamanan field endpoint JSON.
 
 ### Tugas 3 — Form & Data Delivery
 
@@ -228,3 +282,17 @@ Ketika mengunakan form HTML manual, kita perlu menangani input, validasi dan pen
 Saya menggunakan chatgpt untuk menjelaskan overview alur dari pengerjaan tutorial dan tugas lalu mencoba mengerjakannnya sendiri. Ketika ada problem saya juga meminta chatgpt untuk mencari akar masalah dan juga minta untuk cek kode sebelum di push.
 
 Keterbatasan AI: contoh kode yang diberikan belum selalu sesuai dengan kondisi proyek saya karena saya tidak menggunakan ai yang terintegrasi dengan vscode.
+
+
+### AI Disclosure Tugas 4
+
+Saya menggunakan ChatGPT untuk memahami alur pengerjaan tutorial dan tugas supaya lebih mudah dimengerti, kemudian saya juga menggunakannya untuk mengoreksi atau memastikan tidak ada langkah yang salah dari pengerjaan saya. Selain itu, saya juga meminta ai untuk memberikan beberapa ide untuk fitur tambahan di navbar.
+
+
+Ringkasan alur prompting:
+
+1. Meminta analisis instruksi Tugas 4 dan penyesuaian terhadap alur Tutorial 4.
+2. Meminta pengerjaan dibagi menjadi lima bagian commit progresif.
+3. memastikan setiap sebelum commit kode saya sudah tepat
+
+Keterbatasan AI yang ditemukan adalah solusi umum tidak selalu langsung sesuai dengan struktur proyek. Contohnya, fitur Tutorial 4 diterapkan pada Achievements, sedangkan Tugas 4 harus melanjutkan Experience dari Tugas 3. Pembuatan akun superuser dan penetapan anggota grup `Editor` tetap harus dilakukan melalui environment dan Django Admin, bukan diasumsikan selesai oleh kode.

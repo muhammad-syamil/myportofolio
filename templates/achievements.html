@@ -61,6 +61,16 @@
 
                     <div class="achievement-card-actions">
                         {% include "components/achievement_star.html" with achievement=achievement %}
+
+                        {% if user.is_superuser or is_editor %}
+                            <a
+                                href="{% url 'main:update_achievement' achievement.id %}"
+                                class="achievement-button achievement-button-secondary"
+                            >
+                                Edit
+                            </a>
+                        {% endif %}
+
                         {% if user.is_superuser %}
                             {% include "components/achievement_delete_modal.html" with achievement=achievement %}
                         {% endif %}

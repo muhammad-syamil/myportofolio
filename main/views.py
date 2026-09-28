@@ -138,6 +138,9 @@ def show_achievements(request):
         "name": "Muhammad Syamil",
         "achievement_list": achievements,
         "title_query": title_query,
+        "is_editor": (
+            request.user.is_authenticated and _is_editor(request.user)
+        ),
     }
     return render(request, "achievements.html", context)
 
@@ -157,6 +160,33 @@ def create_achievement(request):
     context = {
         "name": "Muhammad Syamil",
         "form": form,
+        "page_title": "Tambah Prestasi",
+        "submit_label": "Tambah Prestasi",
+    }
+    return render(request, "achievement_form.html", context)
+
+
+@login_required(login_url="/login/")
+def update_achievement(request, achievement_id):
+    if not (request.user.is_superuser or _is_editor(request.user)):
+        raise PermissionDenied
+
+    achievement = get_object_or_404(Achievements, pk=achievement_id)
+    form = AchievementForm(
+        request.POST if request.method == "POST" else None,
+        instance=achievement,
+    )
+
+    if request.method == "POST" and form.is_valid():
+        form.save()
+        messages.success(request, "Prestasi berhasil diperbarui!")
+        return redirect("main:show_achievements")
+
+    context = {
+        "name": "Muhammad Syamil",
+        "form": form,
+        "page_title": "Edit Prestasi",
+        "submit_label": "Simpan Perubahan",
     }
     return render(request, "achievement_form.html", context)
 
