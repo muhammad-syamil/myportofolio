@@ -11,22 +11,28 @@
             <h1>Achievements</h1>
 
             {% if user.is_superuser %}
-                <a
-                    href="{% url 'main:create_achievement' %}"
+                <button
+                    type="button"
                     class="achievement-button"
+                    popovertarget="add-achievement-modal"
                 >
-                    + Tambah Prestasi
-                </a>
+                    <span aria-hidden="true">+</span>
+                    Tambah Prestasi
+                </button>
             {% endif %}
         </div>
 
-        <form
-            method="get"
-            action="{% url 'main:show_achievements' %}"
-            class="achievement-search"
+        <button
+            class="achievement-button achievement-button-secondary"
+            onclick="showToast('Notifikasi Sistem', 'Prestasi berhasil dimuat dengan baik!', 'success')"
         >
+            Test Toast Notifikasi
+        </button>
+
+        <form id="achievement-search-form" class="achievement-search">
             <input
                 type="search"
+                id="search-input"
                 name="title"
                 value="{{ title_query }}"
                 placeholder="Cari nama prestasi"
@@ -37,55 +43,259 @@
             </button>
         </form>
 
-        <div class="achievements-grid">
-            {% for achievement in achievement_list %}
-                <article class="achievements-card">
-                    {% if achievement.image_url %}
-                        <img
-                            src="{{ achievement.image_url }}"
-                            alt="Gambar {{ achievement.title }}"
-                            class="achievements-image"
-                        >
-                    {% endif %}
-
-                    <h2>{{ achievement.title }}</h2>
-
-                    <p>
-                        <strong>Bidang:</strong>
-                        {{ achievement.field }}
-                    </p>
-
-                    <p class="achievements-description">
-                        {{ achievement.description }}
-                    </p>
-
-                    <div class="achievement-card-actions">
-                        {% include "components/achievement_star.html" with achievement=achievement %}
-
-                        {% if user.is_superuser or is_editor %}
-                            <a
-                                href="{% url 'main:update_achievement' achievement.id %}"
-                                class="achievement-button achievement-button-secondary"
-                            >
-                                Edit
-                            </a>
-                        {% endif %}
-
-                        {% if user.is_superuser %}
-                            {% include "components/achievement_delete_modal.html" with achievement=achievement %}
-                        {% endif %}
-                    </div>
-                </article>
-            {% empty %}
-                <p class="empty-state">
-                    {% if title_query %}
-                        Tidak ada prestasi dengan nama tersebut.
-                    {% else %}
-                        Belum ada prestasi yang ditambahkan.
-                    {% endif %}
-                </p>
-            {% endfor %}
+        <div id="loading" class="empty-state hide">
+            <p>Memuat prestasi...</p>
         </div>
+
+        <div id="error" class="empty-state hide">
+            <p>Gagal memuat data prestasi. Silakan coba lagi.</p>
+        </div>
+
+        <div id="empty" class="empty-state hide">
+            <p>Belum ada prestasi yang ditambahkan atau ditemukan.</p>
+        </div>
+
+        <div id="grid" class="achievements-grid hide"></div>
     </section>
 </main>
+
+{% if user.is_superuser %}
+    {% include "components/achievement_form_modal.html" %}
+{% endif %}
+
+<script>
+    const BASE_ACHIEVEMENTS_ENDPOINT = "{% url 'main:get_achievements_json' %}";
+    const CREATE_ACHIEVEMENT_ENDPOINT = "{% url 'main:create_achievement_ajax' %}";
+    const IS_SUPERUSER = "{{ user.is_superuser|yesno:'true,false' }}" === "true";
+    const IS_EDITOR = "{{ is_editor|yesno:'true,false' }}" === "true";
+    const CAN_EDIT = IS_SUPERUSER || IS_EDITOR;
+    const SEARCH_DEBOUNCE_DELAY = 300;
+    let achievementsAbortController;
+    let searchDebounceTimer;
+
+    const loadingState = document.getElementById("loading");
+    const errorState = document.getElementById("error");
+    const emptyState = document.getElementById("empty");
+    const gridContainer = document.getElementById("grid");
+    const searchForm = document.getElementById("achievement-search-form");
+    const searchInput = document.getElementById("search-input");
+    const achievementForm = document.getElementById("achievement-form");
+
+    function displayPageSection({
+        showLoading = false,
+        showError = false,
+        showEmpty = false,
+        showGrid = false,
+    }) {
+        loadingState.classList.toggle("hide", !showLoading);
+        errorState.classList.toggle("hide", !showError);
+        emptyState.classList.toggle("hide", !showEmpty);
+        gridContainer.classList.toggle("hide", !showGrid);
+    }
+
+    function escapeHtml(value) {
+        return String(value ?? "")
+            .replaceAll("&", "&amp;")
+            .replaceAll("<", "&lt;")
+            .replaceAll(">", "&gt;")
+            .replaceAll('"', "&quot;")
+            .replaceAll("'", "&#39;");
+    }
+
+    function buildAchievementCardElement(item) {
+        const achievement = item.fields;
+        const achievementId = item.pk;
+
+        const articleElement = document.createElement("article");
+        articleElement.className = "achievements-card";
+
+        const imageHtml = achievement.image_url
+            ? `<img src="${escapeHtml(achievement.image_url)}" alt="Gambar ${escapeHtml(achievement.title)}" class="achievements-image">`
+            : "";
+
+        const editUrl = "{% url 'main:update_achievement' 999999999 %}"
+            .replace("999999999", achievementId);
+        const deleteUrl = "{% url 'main:delete_achievement' 999999999 %}"
+            .replace("999999999", achievementId);
+        const starUrl = "{% url 'main:toggle_star' 999999999 %}"
+            .replace("999999999", achievementId);
+
+        const editHtml = CAN_EDIT
+            ? `<a href="${editUrl}" class="achievement-button achievement-button-secondary">Edit</a>`
+            : "";
+
+        const deleteHtml = IS_SUPERUSER
+            ? `<form method="post" action="${deleteUrl}" class="achievement-action-form">
+                {% csrf_token %}
+                <button type="submit" class="achievement-button achievement-button-danger" onclick="return confirm('Yakin ingin menghapus prestasi ini?');">Hapus Prestasi</button>
+            </form>`
+            : "";
+
+        const isStarredClass = achievement.is_starred ? " is-starred" : "";
+        const starText = achievement.is_starred ? "Unstar" : "Star";
+        const starTitle = achievement.star_count > 0
+            ? `Dibintangi oleh ${escapeHtml(achievement.starred_by_names)}`
+            : "Jadilah yang pertama memberi star";
+
+        const completeCardHtml = `
+            ${imageHtml}
+            <h2>${escapeHtml(achievement.title)}</h2>
+            <p><strong>Bidang:</strong> ${escapeHtml(achievement.field)}</p>
+            <p class="achievements-description">${escapeHtml(achievement.description)}</p>
+            <div class="achievement-card-actions">
+                <form method="post" action="${starUrl}" class="star-form">
+                    {% csrf_token %}
+                    <button type="submit"
+                            class="achievement-button button button-star${isStarredClass}"
+                            title="${starTitle}">
+                        <span aria-hidden="true">★</span>
+                        ${starText}
+                        <span class="star-count">${achievement.star_count}</span>
+                    </button>
+                </form>
+                ${editHtml}
+                ${deleteHtml}
+            </div>
+        `;
+
+        articleElement.innerHTML = completeCardHtml;
+        return articleElement;
+    }
+
+    async function fetchAchievements(searchQuery = "") {
+        if (achievementsAbortController) {
+            achievementsAbortController.abort();
+        }
+        achievementsAbortController = new AbortController();
+
+        try {
+            displayPageSection({ showLoading: true });
+
+            const url = searchQuery
+                ? `${BASE_ACHIEVEMENTS_ENDPOINT}?title=${encodeURIComponent(searchQuery)}`
+                : BASE_ACHIEVEMENTS_ENDPOINT;
+
+            const response = await fetch(url, {
+                headers: { "Accept": "application/json" },
+                signal: achievementsAbortController.signal,
+            });
+
+            if (!response.ok) throw new Error("Failed to fetch data");
+
+            const achievementData = await response.json();
+
+            if (achievementData.length === 0) {
+                displayPageSection({ showEmpty: true });
+            } else {
+                gridContainer.innerHTML = "";
+                achievementData.forEach((item) => {
+                    gridContainer.appendChild(
+                        buildAchievementCardElement(item),
+                    );
+                });
+                displayPageSection({ showGrid: true });
+            }
+        } catch (error) {
+            if (error.name === "AbortError") return;
+            console.error("Error loading achievements:", error);
+            displayPageSection({ showError: true });
+        }
+    }
+
+    function searchAchievements() {
+        fetchAchievements(searchInput.value.trim());
+    }
+
+    searchInput.addEventListener("input", function() {
+        clearTimeout(searchDebounceTimer);
+        searchDebounceTimer = setTimeout(function() {
+            searchAchievements();
+        }, SEARCH_DEBOUNCE_DELAY);
+    });
+
+    searchForm.addEventListener("submit", function(event) {
+        event.preventDefault();
+        clearTimeout(searchDebounceTimer);
+        searchAchievements();
+    });
+
+    function closeAchievementModal() {
+        document.getElementById("add-achievement-modal").hidePopover();
+    }
+
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== "") {
+            const cookies = document.cookie.split(";");
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) === (name + "=")) {
+                    cookieValue = decodeURIComponent(
+                        cookie.substring(name.length + 1),
+                    );
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+
+    async function addAchievement(event) {
+        event.preventDefault();
+
+        const submitButton = achievementForm.querySelector(
+            'button[type="submit"]',
+        );
+        submitButton.disabled = true;
+
+        try {
+            const response = await fetch(CREATE_ACHIEVEMENT_ENDPOINT, {
+                method: "POST",
+                headers: { "X-CSRFToken": getCookie("csrftoken") },
+                body: new FormData(achievementForm),
+            });
+            const result = await response.json().catch(() => ({}));
+
+            if (response.ok) {
+                achievementForm.reset();
+                closeAchievementModal();
+                showToast(
+                    "Berhasil",
+                    "Prestasi baru berhasil ditambahkan!",
+                    "success",
+                );
+                fetchAchievements(searchInput.value.trim());
+            } else {
+                const errorMessages = result.errors
+                    ? Object.values(result.errors)
+                        .flat()
+                        .map((error) => error.message)
+                    : [
+                        result.message
+                        || `Terjadi kesalahan (status ${response.status}).`,
+                    ];
+                showToast(
+                    "Gagal menambahkan prestasi",
+                    errorMessages.join(" "),
+                    "error",
+                );
+            }
+        } catch (error) {
+            console.error("Error adding achievement:", error);
+            showToast(
+                "Gagal menambahkan prestasi",
+                "Tidak dapat terhubung ke server. Silakan coba lagi.",
+                "error",
+            );
+        } finally {
+            submitButton.disabled = false;
+        }
+    }
+
+    if (achievementForm) {
+        achievementForm.addEventListener("submit", addAchievement);
+    }
+
+    fetchAchievements(searchInput.value.trim());
+</script>
 {% endblock content %}

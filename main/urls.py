@@ -5,6 +5,7 @@ from main.views import (
     show_experience,
     show_achievements,
     create_achievement,
+    create_achievement_ajax,
     update_achievement,
     get_achievements_json,
     delete_achievement,
@@ -32,6 +33,11 @@ urlpatterns = [
         "achievements/add/",
         create_achievement,
         name="create_achievement",
+    ),
+    path(
+        "achievements/add-ajax/",
+        create_achievement_ajax,
+        name="create_achievement_ajax",
     ),
     path(
         "api/achievements/",

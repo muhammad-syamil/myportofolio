@@ -6,7 +6,7 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth.forms import AuthenticationForm, UserCreationForm
 from django.core import serializers
 from django.core.exceptions import PermissionDenied
-from django.http import HttpResponse
+from django.http import HttpResponse, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.views.decorators.http import require_POST
 
@@ -104,40 +104,48 @@ def show_experience(request):
 
 def get_achievements_json(request):
     title_query = request.GET.get("title", "").strip()
-    achievements = Achievements.objects.all()
+    achievements = Achievements.objects.prefetch_related("starred_by").all()
 
     if title_query:
         achievements = achievements.filter(
             title__icontains=title_query
         )
 
-    achievements_json = serializers.serialize(
-        "json",
-        achievements,
-        use_natural_foreign_keys=True,
-    )
-    return HttpResponse(
-        achievements_json,
-        content_type="application/json",
-    )
+    data = []
+    for achievement in achievements:
+        starred_users = achievement.starred_by.all()
+        is_starred = (
+            request.user in starred_users
+            if request.user.is_authenticated
+            else False
+        )
+        starred_by_names = ", ".join(
+            user.username for user in starred_users
+        )
+
+        data.append({
+            "pk": str(achievement.id),
+            "fields": {
+                "title": achievement.title,
+                "description": achievement.description,
+                "field": achievement.field,
+                "image_url": achievement.image_url,
+                "star_count": starred_users.count(),
+                "is_starred": is_starred,
+                "starred_by_names": starred_by_names,
+            },
+        })
+
+    return JsonResponse(data, safe=False)
 
 
 def show_achievements(request):
-    json_response = get_achievements_json(request)
-
-    achievements = serializers.deserialize(
-        "json",
-        json_response.content.decode("utf-8"),
-    )
-    achievements = [
-        achievement.object for achievement in achievements
-    ]
     title_query = request.GET.get("title", "").strip()
 
     context = {
         "name": "Muhammad Syamil",
-        "achievement_list": achievements,
         "title_query": title_query,
+        "form": AchievementForm(),
         "is_editor": (
             request.user.is_authenticated and _is_editor(request.user)
         ),
@@ -164,6 +172,36 @@ def create_achievement(request):
         "submit_label": "Tambah Prestasi",
     }
     return render(request, "achievement_form.html", context)
+
+
+@require_POST
+def create_achievement_ajax(request):
+    if not request.user.is_superuser:
+        return JsonResponse(
+            {
+                "message": (
+                    "Hanya pemilik portofolio yang dapat "
+                    "menambahkan prestasi."
+                )
+            },
+            status=403,
+        )
+
+    form = AchievementForm(request.POST)
+    if form.is_valid():
+        achievement = form.save()
+        return JsonResponse(
+            {
+                "message": "Prestasi berhasil ditambahkan.",
+                "pk": str(achievement.id),
+            },
+            status=201,
+        )
+
+    return JsonResponse(
+        {"errors": form.errors.get_json_data()},
+        status=400,
+    )
 
 
 @login_required(login_url="/login/")
