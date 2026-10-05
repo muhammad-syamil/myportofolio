@@ -1,5 +1,5 @@
 from django.contrib.auth.models import Group, User
-from django.test import TestCase
+from django.test import Client, TestCase
 from django.urls import reverse
 from django.utils import timezone
 
@@ -145,6 +145,116 @@ class ExperienceFeaturesTest(TestCase):
         response = self.client.post(delete_url, follow=True)
         self.assertContains(response, "Experience berhasil dihapus!")
         self.assertFalse(Experience.objects.filter(pk=experience.pk).exists())
+
+
+class ExperienceAjaxTest(TestCase):
+    def setUp(self):
+        self.regular_user = User.objects.create_user(username="ajax_regular")
+        self.owner = User.objects.create_superuser(username="ajax_owner")
+        self.create_url = reverse("main:create_experience_ajax")
+        self.payload = {
+            "title": "Machine Learning Engineer",
+            "description": "Mengembangkan model prediksi.",
+            "category": "research",
+            "thumbnail": "https://example.com/experience.jpg",
+        }
+
+    def test_ajax_create_only_accepts_post(self):
+        self.client.force_login(self.owner)
+
+        response = self.client.get(self.create_url)
+
+        self.assertEqual(response.status_code, 405)
+
+    def test_ajax_create_rejects_anonymous_and_regular_user(self):
+        response = self.client.post(self.create_url, self.payload)
+        self.assertEqual(response.status_code, 403)
+        self.assertEqual(Experience.objects.count(), 0)
+
+        self.client.force_login(self.regular_user)
+        response = self.client.post(self.create_url, self.payload)
+        self.assertEqual(response.status_code, 403)
+        self.assertEqual(Experience.objects.count(), 0)
+
+    def test_owner_can_create_experience_with_ajax(self):
+        self.client.force_login(self.owner)
+
+        response = self.client.post(self.create_url, self.payload)
+
+        self.assertEqual(response.status_code, 201)
+        experience = Experience.objects.get()
+        self.assertEqual(response.json()["pk"], str(experience.pk))
+        self.assertEqual(experience.title, self.payload["title"])
+
+    def test_ajax_create_returns_model_form_errors(self):
+        self.client.force_login(self.owner)
+
+        response = self.client.post(
+            self.create_url,
+            {**self.payload, "thumbnail": "javascript:alert(1)"},
+        )
+
+        self.assertEqual(response.status_code, 400)
+        self.assertIn("thumbnail", response.json()["errors"])
+        self.assertEqual(Experience.objects.count(), 0)
+
+    def test_form_strips_html_and_rejects_tag_only_title(self):
+        self.client.force_login(self.owner)
+
+        response = self.client.post(
+            self.create_url,
+            {
+                **self.payload,
+                "title": "<b>Machine Learning Engineer</b>",
+                "description": "Membangun <em>model prediksi</em>.",
+            },
+        )
+
+        self.assertEqual(response.status_code, 201)
+        experience = Experience.objects.get()
+        self.assertEqual(experience.title, "Machine Learning Engineer")
+        self.assertEqual(experience.description, "Membangun model prediksi.")
+
+        response = self.client.post(
+            self.create_url,
+            {
+                **self.payload,
+                "title": '<img src="x" onerror="alert(\'XSS!\')">',
+            },
+        )
+
+        self.assertEqual(response.status_code, 400)
+        self.assertIn("title", response.json()["errors"])
+        self.assertEqual(Experience.objects.count(), 1)
+
+    def test_ajax_post_requires_valid_csrf_token(self):
+        csrf_client = Client(enforce_csrf_checks=True)
+        csrf_client.force_login(self.owner)
+
+        response = csrf_client.post(self.create_url, self.payload)
+        self.assertEqual(response.status_code, 403)
+
+        page = csrf_client.get(reverse("main:show_experience"))
+        csrf_token = page.cookies["csrftoken"].value
+        response = csrf_client.post(
+            self.create_url,
+            self.payload,
+            HTTP_X_CSRFTOKEN=csrf_token,
+        )
+
+        self.assertEqual(response.status_code, 201)
+
+    def test_modal_and_ajax_script_only_expose_form_to_owner(self):
+        response = self.client.get(reverse("main:show_experience"))
+        self.assertNotContains(response, 'id="add-experience-modal"')
+        self.assertContains(response, 'if (experienceForm)')
+
+        self.client.force_login(self.owner)
+        response = self.client.get(reverse("main:show_experience"))
+        self.assertContains(response, 'id="add-experience-modal"')
+        self.assertContains(response, self.create_url)
+        self.assertContains(response, '"X-CSRFToken"')
+        self.assertContains(response, "/static/js/toast.js")
 
 
 class ExperienceJsonSecurityTest(TestCase):

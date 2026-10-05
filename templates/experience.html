@@ -12,10 +12,13 @@
             <h1>Experience</h1>
 
             {% if user.is_superuser %}
-                <a href="{% url 'main:create_experience' %}"
-                   class="achievement-button">
+                <button
+                    type="button"
+                    class="achievement-button"
+                    popovertarget="add-experience-modal"
+                >
                     Tambah Experience
-                </a>
+                </button>
             {% endif %}
 
             <form id="experience-filter-form" class="experience-filters">
@@ -61,8 +64,13 @@
     </section>
 </main>
 
+{% if user.is_superuser %}
+    {% include "components/experience_form_modal.html" %}
+{% endif %}
+
 <script>
     const BASE_EXPERIENCE_ENDPOINT = "{% url 'main:get_experience_json' %}";
+    const CREATE_EXPERIENCE_ENDPOINT = "{% url 'main:create_experience_ajax' %}";
     const IS_SUPERUSER = "{{ user.is_superuser|yesno:'true,false' }}" === "true";
     const IS_EDITOR = "{{ is_editor|yesno:'true,false' }}" === "true";
     const CAN_EDIT = IS_SUPERUSER || IS_EDITOR;
@@ -79,6 +87,7 @@
     const categoryInput = document.getElementById("experience-category");
     const statusInput = document.getElementById("experience-status-filter");
     const resetButton = document.getElementById("reset-experience-filter");
+    const experienceForm = document.getElementById("experience-form");
 
     function displayExperienceSection({
         showLoading = false,
@@ -219,6 +228,79 @@
         }
     }
 
+    function closeExperienceModal() {
+        document.getElementById("add-experience-modal").hidePopover();
+    }
+
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== "") {
+            const cookies = document.cookie.split(";");
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) === (name + "=")) {
+                    cookieValue = decodeURIComponent(
+                        cookie.substring(name.length + 1),
+                    );
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+
+    async function addExperience(event) {
+        event.preventDefault();
+
+        const submitButton = experienceForm.querySelector(
+            'button[type="submit"]',
+        );
+        submitButton.disabled = true;
+
+        try {
+            const response = await fetch(CREATE_EXPERIENCE_ENDPOINT, {
+                method: "POST",
+                headers: { "X-CSRFToken": getCookie("csrftoken") },
+                body: new FormData(experienceForm),
+            });
+            const result = await response.json().catch(() => ({}));
+
+            if (response.ok) {
+                experienceForm.reset();
+                closeExperienceModal();
+                showToast(
+                    "Berhasil",
+                    "Experience baru berhasil ditambahkan!",
+                    "success",
+                );
+                fetchExperiences();
+            } else {
+                const errorMessages = result.errors
+                    ? Object.values(result.errors)
+                        .flat()
+                        .map((error) => error.message)
+                    : [
+                        result.message
+                        || `Terjadi kesalahan (status ${response.status}).`,
+                    ];
+                showToast(
+                    "Gagal menambahkan experience",
+                    errorMessages.join(" "),
+                    "error",
+                );
+            }
+        } catch (error) {
+            console.error("Error adding experience:", error);
+            showToast(
+                "Gagal menambahkan experience",
+                "Tidak dapat terhubung ke server. Silakan coba lagi.",
+                "error",
+            );
+        } finally {
+            submitButton.disabled = false;
+        }
+    }
+
     function scheduleExperienceSearch() {
         clearTimeout(searchDebounceTimer);
         searchDebounceTimer = setTimeout(function() {
@@ -251,6 +333,10 @@
         statusInput.value = "";
         fetchExperiences();
     });
+
+    if (experienceForm) {
+        experienceForm.addEventListener("submit", addExperience);
+    }
 
     fetchExperiences();
 </script>

@@ -69,3 +69,39 @@ class ExperienceForm(ModelForm):
             "category",
             "thumbnail",
         ]
+        labels = {
+            "title": "Judul Experience",
+            "description": "Deskripsi",
+            "category": "Kategori",
+            "thumbnail": "URL Thumbnail",
+        }
+        widgets = {
+            "title": TextInput(
+                attrs={
+                    "placeholder": "Nama pengalamanmu",
+                    "maxlength": 255,
+                }
+            ),
+            "description": Textarea(
+                attrs={
+                    "placeholder": "Ceritakan pengalamanmu",
+                    "rows": 4,
+                }
+            ),
+            "thumbnail": URLInput(
+                attrs={
+                    "placeholder": "https://example.com/thumbnail.jpg",
+                }
+            ),
+        }
+
+    def clean_title(self):
+        title = strip_tags(self.cleaned_data["title"]).strip()
+        if not title:
+            raise ValidationError(
+                "Judul experience tidak boleh hanya berisi tag HTML."
+            )
+        return title
+
+    def clean_description(self):
+        return strip_tags(self.cleaned_data["description"]).strip()

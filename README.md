@@ -8,12 +8,12 @@ Kelas : PBP D
 
 - Personal profile, skills, projects, dan social media links.
 - Halaman Achievements dengan fitur tambah, pencarian, edit, dan hapus data.
-- Halaman Experience dengan fitur tambah, edit, dan hapus menggunakan form.
-- Pencarian Experience berdasarkan judul serta filter kategori dan status.
+- Halaman Experience dengan fitur tambah melalui modal AJAX serta fitur edit dan hapus.
+- Pencarian Experience dengan debounce serta filter kategori dan status melalui AJAX.
 - Konfirmasi sebelum menghapus Experience.
 - Notifikasi sukses setelah menambah, mengedit, atau menghapus Experience.
-- Endpoint JSON untuk data Achievements dan Experience.
-- Deserialisasi JSON sebelum data ditampilkan melalui template Django.
+- Endpoint JSON manual untuk data Achievements dan Experience beserta informasi star.
+- Loading, error, dan empty state ketika data dimuat menggunakan Fetch API.
 - Template inheritance menggunakan `base.html`.
 - Responsive layout dengan efek hover dan penanda fokus pada halaman Experience.
 - Registrasi, login, logout, session, dan cookie `last_login`.
@@ -21,6 +21,7 @@ Kelas : PBP D
 - Fitur star/unstar Experience dengan jumlah star per item.
 - Endpoint JSON Experience dengan whitelist field publik.
 - Navbar responsif dengan indikator halaman aktif dan tombol autentikasi.
+- Perlindungan XSS melalui escaping JavaScript dan sanitasi input server-side.
 
 ## Tech Stack
 
@@ -31,6 +32,7 @@ Kelas : PBP D
 - JSON dan Django serializers
 - HTML5
 - CSS3
+- JavaScript Fetch API, AJAX, dan Popover API
 - Git & GitHub
 
 ## Project Structure
@@ -53,12 +55,17 @@ myportofolio/
 ├── static/
 │   ├── css/
 │   │   └── style.css
-│   └── img/
+│   ├── img/
+│   └── js/
+│       └── toast.js
 ├── templates/
 │   ├── components/
 │   │   ├── achievement_delete_modal.html
+│   │   ├── achievement_form_modal.html
 │   │   ├── experience_delete_modal.html
-│   │   └── experience_star.html
+│   │   ├── experience_form_modal.html
+│   │   ├── experience_star.html
+│   │   └── toast.html
 │   ├── base.html
 │   ├── index.html
 │   ├── achievements.html
@@ -157,10 +164,12 @@ python manage.py test main
 | `/admin/` | Mengelola akun dan grup `Editor` |
 | `/achievements/` | Menampilkan daftar prestasi |
 | `/achievements/add/` | Menambahkan prestasi |
+| `/achievements/add-ajax/` | Menambahkan prestasi melalui AJAX |
 | `/achievements/<id>/edit/` | Mengedit prestasi sebagai Editor atau superuser |
 | `/api/achievements/` | Mengembalikan data prestasi dalam JSON |
 | `/experience/` | Menampilkan dan memfilter pengalaman |
 | `/experience/add/` | Menambahkan pengalaman |
+| `/experience/add-ajax/` | Menambahkan pengalaman melalui AJAX |
 | `/experience/<uuid>/edit/` | Mengedit pengalaman berdasarkan ID |
 | `/experience/<uuid>/delete/` | Menghapus pengalaman melalui POST |
 | `/experience/<uuid>/star/` | Memberi atau membatalkan star melalui POST |
@@ -182,6 +191,34 @@ Contoh:
 Status pengalaman ditentukan dari `ended_at`: kosong berarti masih berlangsung, sedangkan terisi berarti selesai. Form Experience saat ini belum menyediakan pengubahan tanggal tersebut.
 
 ## Development Progress
+
+### Tugas 5 — Web Interactivity with JavaScript
+
+Tugas 5 menerapkan pola AJAX dari Tutorial 5 pada bagian Experience yang dikembangkan sejak Tugas 3 dan Tugas 4.
+
+1. **Pemuatan data dengan AJAX**
+   Halaman Experience hanya merender kerangka halaman. Data diambil dari endpoint JSON menggunakan `fetch()` dan ditampilkan sebagai kartu melalui JavaScript.
+
+2. **JSON manual dan informasi star**
+   Endpoint Experience menggunakan `JsonResponse` manual agar dapat menyertakan jumlah star, status star pengguna yang sedang login, nama pemberi star, label kategori, dan status pengalaman.
+
+3. **Pencarian dan filter interaktif**
+   Pencarian judul memakai debounce 300 milidetik. Filter kategori, filter status, dan reset filter juga memperbarui daftar tanpa reload. `AbortController` membatalkan request lama ketika filter berubah dengan cepat.
+
+4. **State antarmuka**
+   Halaman menyediakan loading, error, empty, dan data state agar pengguna memperoleh umpan balik selama request berlangsung.
+
+5. **Modal dan POST AJAX**
+   Superuser dapat membuka form tambah Experience melalui modal Popover API. Form dikirim menggunakan Fetch API, `FormData`, dan header `X-CSRFToken`. Endpoint membalas dengan status 201, 400, atau 403 sesuai hasil request.
+
+6. **Toast notification**
+   Toast global dari Tutorial 5 digunakan untuk menampilkan keberhasilan, kesalahan validasi ModelForm, dan kegagalan koneksi tanpa memindahkan halaman.
+
+7. **Perlindungan XSS**
+   Seluruh nilai dinamis yang dimasukkan melalui `innerHTML` dilewatkan ke `escapeHtml()`. `ExperienceForm` juga menggunakan `strip_tags()` pada judul dan deskripsi serta menolak judul yang hanya berisi tag HTML.
+
+8. **Pengujian**
+   Test mencakup pemuatan JSON, kombinasi filter, status star per pengguna, visibilitas modal berdasarkan role, respons endpoint AJAX, CSRF, validasi ModelForm, dan payload XSS.
 
 ### Tugas 4 — Authentication, Session & Cookies
 
@@ -296,3 +333,39 @@ Ringkasan alur prompting:
 3. memastikan setiap sebelum commit kode saya sudah tepat
 
 Keterbatasan AI yang ditemukan adalah solusi umum tidak selalu langsung sesuai dengan struktur proyek. Contohnya, fitur Tutorial 4 diterapkan pada Achievements, sedangkan Tugas 4 harus melanjutkan Experience dari Tugas 3. Pembuatan akun superuser dan penetapan anggota grup `Editor` tetap harus dilakukan melalui environment dan Django Admin, bukan diasumsikan selesai oleh kode.
+
+
+### Refleksi Tugas 5
+
+1. **Debouncing pada pencarian AJAX**
+
+   Debouncing adalah teknik menunda eksekusi fungsi sampai pengguna berhenti menghasilkan event selama waktu tertentu. Pada pencarian Experience, setiap perubahan input membatalkan timer sebelumnya dan membuat timer baru selama 300 milidetik. `fetchExperiences()` baru dijalankan ketika pengguna berhenti mengetik selama durasi tersebut.
+
+   Teknik ini penting karena tanpa debouncing, setiap karakter yang diketik akan menghasilkan request baru ke endpoint JSON dan query baru ke database. Hal tersebut memboroskan jaringan dan sumber daya server, serta dapat menyebabkan tampilan berkedip atau hasil lama menimpa hasil terbaru ketika respons datang tidak berurutan. Implementasi saya juga menggunakan `AbortController` untuk membatalkan request sebelumnya sehingga debouncing dan pembatalan request saling melengkapi.
+
+2. **Fungsi `await` ketika menggunakan `fetch()`**
+
+   `fetch()` langsung mengembalikan sebuah `Promise`, bukan respons HTTP yang sudah selesai. `await fetch(...)` menunda lanjutan eksekusi di dalam fungsi `async` sampai Promise tersebut selesai dan menghasilkan objek `Response`. Setelah itu, `await response.json()` kembali menunggu proses pembacaan dan parsing body JSON.
+
+   Tanpa `await`, variabel `response` masih berupa Promise sehingga properti seperti `response.ok` dan method `response.json()` belum dapat digunakan seperti objek Response. Kode setelahnya juga dapat berjalan terlalu cepat sebelum data tersedia. Request tetap dapat diproses dengan pola `.then()`, tetapi jika `await` dihapus tanpa menggantinya dengan penanganan Promise, alur loading, error handling, dan rendering data akan gagal. `await` hanya menunda fungsi `async` tersebut; browser tetap dapat menjalankan pekerjaan lain melalui event loop.
+
+3. **XSS dan risiko pada data yang dirender melalui JavaScript**
+
+   Cross-Site Scripting atau XSS adalah serangan ketika input berbahaya dimasukkan ke halaman sehingga browser mengeksekusinya sebagai HTML atau JavaScript milik aplikasi. Contohnya adalah payload `<img src="x" onerror="alert('XSS!')">` yang mencoba menjalankan event handler ketika gambar gagal dimuat.
+
+   Template Django secara bawaan melakukan auto-escaping terhadap variabel seperti `{{ value }}`, sehingga karakter HTML berbahaya biasanya ditampilkan sebagai teks. Saat data AJAX dimasukkan menggunakan `innerHTML`, perlindungan template Django tidak lagi ikut bekerja karena penyusunan HTML dilakukan langsung di browser. Jika string dari server dimasukkan tanpa escaping, browser dapat menganggapnya sebagai elemen dan atribut aktif.
+
+   Pada halaman Experience, setiap nilai dinamis yang dimasukkan ke template literal dilewatkan melalui `escapeHtml()`. Di sisi server, `ExperienceForm` menggunakan `strip_tags()` untuk membersihkan judul dan deskripsi, serta menolak judul yang hanya berisi tag HTML. Escaping saat output tetap menjadi perlindungan utama, sedangkan sanitasi input menjadi lapisan pertahanan tambahan.
+
+
+### AI Disclosure Tugas 5
+
+Saya menggunakan ChatGPT untuk memeriksa struktur repository, menyesuaikan pola Tutorial 5 dari Achievements ke Experience, dan membantu implementasi backend dan frontend AJAX.
+
+Ringkasan strategi pengerjaan:
+
+1. Ngerjain sendiri dulu
+2. minta cekin chatgpt kode gua udah bener dan udah sesuai dengan repo belum
+3. runserver
+4. kalo ada yg ga sesuai minta di benerin
+5. commit

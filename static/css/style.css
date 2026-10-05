@@ -1402,9 +1402,9 @@ border-top: 1px solid var(--line);
     border-left: 4px solid var(--accent);
 }
 
-/* ---------- Modal form prestasi ---------- */
+/* ---------- Modal form ---------- */
 
-.achievement-form-modal {
+:is(.achievement-form-modal, .experience-form-modal) {
     display: none;
     position: fixed;
     inset: 0;
@@ -1421,11 +1421,14 @@ border-top: 1px solid var(--line);
     justify-content: center;
 }
 
-.achievement-form-modal:popover-open {
+:is(.achievement-form-modal, .experience-form-modal):popover-open {
     display: flex;
 }
 
-.achievement-form-modal__backdrop {
+:is(
+    .achievement-form-modal__backdrop,
+    .experience-form-modal__backdrop
+) {
     position: absolute;
     inset: 0;
     width: 100%;
@@ -1436,7 +1439,10 @@ border-top: 1px solid var(--line);
     cursor: default;
 }
 
-.achievement-form-modal__content {
+:is(
+    .achievement-form-modal__content,
+    .experience-form-modal__content
+) {
     position: relative;
     z-index: 1;
     width: min(100%, 640px);
@@ -1449,13 +1455,19 @@ border-top: 1px solid var(--line);
     box-shadow: 0 1rem 3rem rgba(28, 25, 23, 0.22);
 }
 
-.achievement-form-modal__content h2 {
+:is(
+    .achievement-form-modal__content,
+    .experience-form-modal__content
+) h2 {
     margin: 0 2.5rem 1.25rem 0;
     font-family: "Space Grotesk", -apple-system, sans-serif;
     font-size: 1.5rem;
 }
 
-.achievement-form-modal__close {
+:is(
+    .achievement-form-modal__close,
+    .experience-form-modal__close
+) {
     position: absolute;
     top: 1rem;
     right: 1rem;
@@ -1468,7 +1480,10 @@ border-top: 1px solid var(--line);
     cursor: pointer;
 }
 
-.achievement-form-modal__actions {
+:is(
+    .achievement-form-modal__actions,
+    .experience-form-modal__actions
+) {
     display: flex;
     justify-content: flex-end;
     gap: 0.75rem;
@@ -1488,23 +1503,32 @@ border-top: 1px solid var(--line);
 }
 
 @media (max-width: 600px) {
-    .achievement-form-modal {
+    :is(.achievement-form-modal, .experience-form-modal) {
         align-items: flex-end;
         padding: 0;
     }
 
-    .achievement-form-modal__content {
+    :is(
+        .achievement-form-modal__content,
+        .experience-form-modal__content
+    ) {
         width: 100%;
         max-height: 90vh;
         padding: 1.25rem;
         border-radius: var(--radius) var(--radius) 0 0;
     }
 
-    .achievement-form-modal__actions {
+    :is(
+        .achievement-form-modal__actions,
+        .experience-form-modal__actions
+    ) {
         flex-direction: column-reverse;
     }
 
-    .achievement-form-modal__actions .achievement-button {
+    :is(
+        .achievement-form-modal__actions,
+        .experience-form-modal__actions
+    ) .achievement-button {
         width: 100%;
         text-align: center;
     }

@@ -10,6 +10,7 @@ from main.views import (
     get_achievements_json,
     delete_achievement,
     create_experience,
+    create_experience_ajax,
     update_experience,
     delete_experience,
     toggle_experience_star,
@@ -61,9 +62,14 @@ urlpatterns = [
     ),
 
     path(
-    "experience/add/",
-    create_experience,
-    name="create_experience",
+        "experience/add/",
+        create_experience,
+        name="create_experience",
+    ),
+    path(
+        "experience/add-ajax/",
+        create_experience_ajax,
+        name="create_experience_ajax",
     ),
     path(
         "experience/<uuid:experience_id>/edit/",

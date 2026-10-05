@@ -84,6 +84,7 @@ def show_experience(request):
         "selected_category": request.GET.get("category", ""),
         "selected_status": request.GET.get("status", ""),
         "category_choices": Experience.EXPERIENCE_CHOICES,
+        "form": ExperienceForm(),
         "is_editor": (
             request.user.is_authenticated and _is_editor(request.user)
         ),
@@ -315,6 +316,36 @@ def create_experience(request):
         "form": form,
         "page_title": "Tambah Experience",
     })
+
+
+@require_POST
+def create_experience_ajax(request):
+    if not request.user.is_superuser:
+        return JsonResponse(
+            {
+                "message": (
+                    "Hanya pemilik portofolio yang dapat "
+                    "menambahkan experience."
+                )
+            },
+            status=403,
+        )
+
+    form = ExperienceForm(request.POST)
+    if form.is_valid():
+        experience = form.save()
+        return JsonResponse(
+            {
+                "message": "Experience berhasil ditambahkan.",
+                "pk": str(experience.id),
+            },
+            status=201,
+        )
+
+    return JsonResponse(
+        {"errors": form.errors.get_json_data()},
+        status=400,
+    )
 
 @login_required(login_url="/login/")
 def update_experience(request, experience_id):
