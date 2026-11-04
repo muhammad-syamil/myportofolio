@@ -22,12 +22,14 @@ Kelas : PBP D
 - Endpoint JSON Experience dengan whitelist field publik.
 - Navbar responsif dengan indikator halaman aktif dan tombol autentikasi.
 - Perlindungan XSS melalui escaping JavaScript dan sanitasi input server-side.
+- API DRF Experience untuk daftar, detail, create, update, delete, dan star dengan izin berbasis peran.
 
 ## Tech Stack
 
 - Python 3
 - Django
 - Django ModelForm
+- Django REST Framework (DRF)
 - Django Authentication, Group, Session, dan Cookie
 - JSON dan Django serializers
 - HTML5
@@ -44,8 +46,13 @@ myportofolio/
 ├── main/
 │   ├── migrations/
 │   ├── forms.py
+│   ├── api_urls.py
+│   ├── api_views.py
 │   ├── models.py
+│   ├── permissions.py
+│   ├── serializers.py
 │   ├── tests.py
+│   ├── tests_api.py
 │   ├── urls.py
 │   └── views.py
 ├── portofolio/
@@ -150,6 +157,7 @@ Melalui Django Admin, buka **Authentication and Authorization → Groups**, buat
 ### 9. Run tests
 
 ```bash
+python manage.py test main.tests_api --verbosity 2
 python manage.py test main
 ```
 
@@ -169,11 +177,15 @@ python manage.py test main
 | `/api/achievements/` | Mengembalikan data prestasi dalam JSON |
 | `/experience/` | Menampilkan dan memfilter pengalaman |
 | `/experience/add/` | Menambahkan pengalaman |
-| `/experience/add-ajax/` | Menambahkan pengalaman melalui AJAX |
+| `/experience/add-ajax/` | Endpoint AJAX lama; tetap tersedia untuk kompatibilitas |
 | `/experience/<uuid>/edit/` | Mengedit pengalaman berdasarkan ID |
 | `/experience/<uuid>/delete/` | Menghapus pengalaman melalui POST |
 | `/experience/<uuid>/star/` | Memberi atau membatalkan star melalui POST |
-| `/api/experience/` | Mengembalikan data pengalaman dalam JSON |
+| `/api/experience/` | Endpoint JSON lama; tetap tersedia untuk kompatibilitas |
+| `/api/v1/experience/` | GET daftar/filter atau POST membuat Experience dengan DRF |
+| `/api/v1/experience/<uuid>/` | GET detail, PUT/PATCH update, DELETE Experience |
+| `/api/v1/experience/<uuid>/star/` | POST memberi atau membatalkan star |
+| `/api-auth/` | Login/logout untuk Browsable API DRF |
 
 Parameter pencarian dan filter Experience dapat digunakan pada halaman daftar maupun endpoint JSON:
 
@@ -186,7 +198,18 @@ Contoh:
 ```text
 /experience/?title=mentor&category=volunteer&status=ongoing
 /api/experience/?category=internship
+/api/v1/experience/?title=mentor&category=volunteer&status=ongoing
 ```
+
+## Tutorial 07 — Django REST Framework
+
+Contoh `Project` pada [Tutorial 07 PBP](https://pbp.cs.ui.ac.id/tutorial/tutorial-7.html) diterapkan pada model `Experience` yang sudah digunakan sejak Tugas 3–5. Tidak ada model atau migrasi baru. Halaman Experience sekarang membaca dan menulis melalui `/api/v1/experience/`, sedangkan endpoint lama tetap tersedia.
+
+Serializer membatasi field publik, memvalidasi judul, kategori, dan URL, serta menyediakan jumlah dan status star. GET tersedia untuk umum; pengguna login dapat star; anggota grup `Editor` dapat PUT/PATCH; hanya superuser dapat POST create dan DELETE. Operasi tulis dengan session memerlukan token CSRF.
+
+Pengujian API mencakup 13 test untuk akses, filter, validasi, metode HTTP, peran, star, dan CSRF. Jalankan kedua perintah pada langkah 9 setelah memasang dependency.
+
+**AI disclosure:** Penyesuaian Tutorial 07 ke model Experience, pembuatan API, perubahan AJAX, dan test dibantu OpenAI Codex. Hasilnya diperiksa dengan `manage.py check`, migrasi, dan test Django.
 
 Status pengalaman ditentukan dari `ended_at`: kosong berarti masih berlangsung, sedangkan terisi berarti selesai. Form Experience saat ini belum menyediakan pengubahan tanggal tersebut.
 

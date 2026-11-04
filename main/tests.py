@@ -43,7 +43,7 @@ class MainTest(TestCase):
         self.assertContains(response, 'id="experience-grid"')
         self.assertContains(response, "function escapeHtml")
         self.assertContains(response, "SEARCH_DEBOUNCE_DELAY = 300")
-        self.assertContains(response, reverse("main:get_experience_json"))
+        self.assertContains(response, reverse("api:experience-list"))
         self.assertContains(response, f'href="{reverse("main:show_main")}"')
 
         api_response = self.client.get(reverse("main:get_experience_json"))
@@ -252,7 +252,7 @@ class ExperienceAjaxTest(TestCase):
         self.client.force_login(self.owner)
         response = self.client.get(reverse("main:show_experience"))
         self.assertContains(response, 'id="add-experience-modal"')
-        self.assertContains(response, self.create_url)
+        self.assertContains(response, reverse("api:experience-list"))
         self.assertContains(response, '"X-CSRFToken"')
         self.assertContains(response, "/static/js/toast.js")
 
