@@ -1,0 +1,56 @@
+<div
+    id="edit-achievement-modal"
+    class="achievement-form-modal"
+    popover="auto"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="edit-achievement-modal-title"
+>
+    <button
+        type="button"
+        class="achievement-form-modal__backdrop"
+        popovertarget="edit-achievement-modal"
+        popovertargetaction="hide"
+        aria-label="Tutup form edit prestasi"
+    ></button>
+
+    <div class="achievement-form-modal__content">
+        <button
+            type="button"
+            class="achievement-form-modal__close"
+            popovertarget="edit-achievement-modal"
+            popovertargetaction="hide"
+            aria-label="Tutup form edit prestasi"
+        >×</button>
+
+        <h2 id="edit-achievement-modal-title">Edit Prestasi</h2>
+        <form id="edit-achievement-form" class="achievement-form" method="post">
+            {% csrf_token %}
+            <div class="form-group">
+                <label for="edit-achievement-title">Nama Prestasi</label>
+                <input id="edit-achievement-title" name="title" type="text" maxlength="255" required>
+            </div>
+            <div class="form-group">
+                <label for="edit-achievement-description">Deskripsi Prestasi</label>
+                <textarea id="edit-achievement-description" name="description" rows="3" required></textarea>
+            </div>
+            <div class="form-group">
+                <label for="edit-achievement-field">Bidang</label>
+                <input id="edit-achievement-field" name="field" type="text" maxlength="255" required>
+            </div>
+            <div class="form-group">
+                <label for="edit-achievement-image-url">URL Gambar Prestasi</label>
+                <input id="edit-achievement-image-url" name="image_url" type="url" placeholder="https://example.com/gambar.jpg">
+            </div>
+            <div class="achievement-form-modal__actions">
+                <button
+                    type="button"
+                    class="achievement-button achievement-button-secondary"
+                    popovertarget="edit-achievement-modal"
+                    popovertargetaction="hide"
+                >Batal</button>
+                <button type="submit" class="achievement-button">Simpan Perubahan</button>
+            </div>
+        </form>
+    </div>
+</div>

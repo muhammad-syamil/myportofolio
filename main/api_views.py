@@ -5,9 +5,9 @@ from rest_framework.decorators import api_view, authentication_classes, permissi
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
-from main.models import Experience
+from main.models import Achievements, Experience
 from main.permissions import IsPortfolioOwnerOrEditorOrReadOnly
-from main.serializers import ExperienceSerializer
+from main.serializers import AchievementSerializer, ExperienceSerializer
 
 
 @api_view(["GET", "HEAD", "POST"])
@@ -68,3 +68,57 @@ def experience_star(request, experience_id):
     else:
         experience.starred_by.add(request.user)
     return Response(ExperienceSerializer(experience, context={"request": request}).data)
+
+
+@api_view(["GET", "HEAD", "POST"])
+@authentication_classes([SessionAuthentication])
+@permission_classes([IsPortfolioOwnerOrEditorOrReadOnly])
+def achievement_list(request):
+    if request.method in ("GET", "HEAD"):
+        achievements = Achievements.objects.prefetch_related("starred_by").order_by("title", "id")
+        title = request.query_params.get("title", "").strip()
+        if title:
+            achievements = achievements.filter(title__icontains=title)
+        serializer = AchievementSerializer(achievements, many=True, context={"request": request})
+        return Response(serializer.data)
+
+    serializer = AchievementSerializer(data=request.data, context={"request": request})
+    serializer.is_valid(raise_exception=True)
+    serializer.save()
+    return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+
+@api_view(["GET", "HEAD", "PUT", "PATCH", "DELETE"])
+@authentication_classes([SessionAuthentication])
+@permission_classes([IsPortfolioOwnerOrEditorOrReadOnly])
+def achievement_detail(request, achievement_id):
+    achievement = get_object_or_404(
+        Achievements.objects.prefetch_related("starred_by"), pk=achievement_id
+    )
+    if request.method in ("GET", "HEAD"):
+        return Response(AchievementSerializer(achievement, context={"request": request}).data)
+    if request.method == "DELETE":
+        achievement.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+    serializer = AchievementSerializer(
+        achievement,
+        data=request.data,
+        partial=request.method == "PATCH",
+        context={"request": request},
+    )
+    serializer.is_valid(raise_exception=True)
+    serializer.save()
+    return Response(serializer.data)
+
+
+@api_view(["POST"])
+@authentication_classes([SessionAuthentication])
+@permission_classes([IsAuthenticated])
+def achievement_star(request, achievement_id):
+    achievement = get_object_or_404(Achievements, pk=achievement_id)
+    if achievement.starred_by.filter(pk=request.user.pk).exists():
+        achievement.starred_by.remove(request.user)
+    else:
+        achievement.starred_by.add(request.user)
+    return Response(AchievementSerializer(achievement, context={"request": request}).data)

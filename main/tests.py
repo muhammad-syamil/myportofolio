@@ -448,7 +448,7 @@ class AchievementsTest(TestCase):
         self.assertContains(response, 'id="error"')
         self.assertContains(response, 'id="empty"')
         self.assertContains(response, 'id="grid"')
-        self.assertContains(response, reverse("main:get_achievements_json"))
+        self.assertContains(response, reverse("api:achievement-list"))
 
     def test_achievement_search_is_applied_by_ajax_endpoint(self):
         Achievements.objects.create(
@@ -525,21 +525,25 @@ class AchievementAuthorizationTest(TestCase):
         response = self.client.get(self.list_url)
         self.assertContains(response, 'const IS_EDITOR = "false"')
         self.assertContains(response, 'const IS_SUPERUSER = "false"')
+        self.assertNotContains(response, 'id="edit-achievement-modal"')
 
         self.client.force_login(self.regular_user)
         response = self.client.get(self.list_url)
         self.assertContains(response, 'const IS_EDITOR = "false"')
         self.assertContains(response, 'const IS_SUPERUSER = "false"')
+        self.assertNotContains(response, 'id="edit-achievement-modal"')
 
         self.client.force_login(self.editor)
         response = self.client.get(self.list_url)
         self.assertContains(response, 'const IS_EDITOR = "true"')
         self.assertContains(response, 'const IS_SUPERUSER = "false"')
+        self.assertContains(response, 'id="edit-achievement-modal"')
 
         self.client.force_login(self.owner)
         response = self.client.get(self.list_url)
         self.assertContains(response, 'const IS_SUPERUSER = "true"')
         self.assertContains(response, 'id="add-achievement-modal"')
+        self.assertContains(response, 'id="edit-achievement-modal"')
 
 
 class AchievementAjaxTest(TestCase):

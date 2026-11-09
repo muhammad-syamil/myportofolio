@@ -23,6 +23,7 @@ Kelas : PBP D
 - Navbar responsif dengan indikator halaman aktif dan tombol autentikasi.
 - Perlindungan XSS melalui escaping JavaScript dan sanitasi input server-side.
 - API DRF Experience untuk daftar, detail, create, update, delete, dan star dengan izin berbasis peran.
+- API DRF Achievements dengan edit lewat modal AJAX untuk Editor dan superuser.
 
 ## Tech Stack
 
@@ -53,6 +54,7 @@ myportofolio/
 │   ├── serializers.py
 │   ├── tests.py
 │   ├── tests_api.py
+│   ├── tests_achievement_api.py
 │   ├── urls.py
 │   └── views.py
 ├── portofolio/
@@ -68,6 +70,7 @@ myportofolio/
 ├── templates/
 │   ├── components/
 │   │   ├── achievement_delete_modal.html
+│   │   ├── achievement_edit_modal.html
 │   │   ├── achievement_form_modal.html
 │   │   ├── experience_delete_modal.html
 │   │   ├── experience_form_modal.html
@@ -158,6 +161,7 @@ Melalui Django Admin, buka **Authentication and Authorization → Groups**, buat
 
 ```bash
 python manage.py test main.tests_api --verbosity 2
+python manage.py test main.tests_achievement_api --verbosity 2
 python manage.py test main
 ```
 
@@ -172,9 +176,12 @@ python manage.py test main
 | `/admin/` | Mengelola akun dan grup `Editor` |
 | `/achievements/` | Menampilkan daftar prestasi |
 | `/achievements/add/` | Menambahkan prestasi |
-| `/achievements/add-ajax/` | Menambahkan prestasi melalui AJAX |
+| `/achievements/add-ajax/` | Endpoint AJAX lama; tetap tersedia untuk kompatibilitas |
 | `/achievements/<id>/edit/` | Mengedit prestasi sebagai Editor atau superuser |
-| `/api/achievements/` | Mengembalikan data prestasi dalam JSON |
+| `/api/achievements/` | Endpoint JSON lama; tetap tersedia untuk kompatibilitas |
+| `/api/v1/achievements/` | GET daftar/pencarian atau POST membuat prestasi dengan DRF |
+| `/api/v1/achievements/<id>/` | GET detail, PUT/PATCH update, DELETE prestasi |
+| `/api/v1/achievements/<id>/star/` | POST memberi atau membatalkan star |
 | `/experience/` | Menampilkan dan memfilter pengalaman |
 | `/experience/add/` | Menambahkan pengalaman |
 | `/experience/add-ajax/` | Endpoint AJAX lama; tetap tersedia untuk kompatibilitas |
@@ -210,6 +217,14 @@ Serializer membatasi field publik, memvalidasi judul, kategori, dan URL, serta m
 Pengujian API mencakup 13 test untuk akses, filter, validasi, metode HTTP, peran, star, dan CSRF. Jalankan kedua perintah pada langkah 9 setelah memasang dependency.
 
 **AI disclosure:** Penyesuaian Tutorial 07 ke model Experience, pembuatan API, perubahan AJAX, dan test dibantu OpenAI Codex. Hasilnya diperiksa dengan `manage.py check`, migrasi, dan test Django.
+
+## Tugas 6 — Django REST Framework pada Achievements
+
+Mengikuti [Tugas 6 PBP](https://pbp.cs.ui.ac.id/assignments/individual/tugas-6.html), pola DRF dari Tutorial 07 diterapkan pada model `Achievements` yang berbeda dari `Experience` pada implementasi tutorial. Model, relasi star, dan data yang ada dipakai kembali tanpa migrasi baru. Pencarian `?title=...` dan seluruh operasi kartu pada halaman Achievements sekarang memakai `/api/v1/achievements/` tanpa reload halaman. Editor dan superuser dapat mengubah data dari modal edit melalui PATCH.
+
+Serializer menetapkan field publik secara eksplisit, membersihkan input teks dengan `strip_tags`, dan menghitung informasi star sebagai field baca saja. Semua pengunjung dapat membaca; pengguna login dapat star; Editor dapat PUT/PATCH; superuser dapat membuat dan menghapus. Request tulis berbasis session menyertakan token CSRF. Endpoint lama tetap tersedia agar fitur sebelumnya tidak terputus.
+
+Test API Achievements memeriksa izin empat peran, isi database setelah permintaan ditolak, filter, validasi, star, metode HTTP, dan CSRF. Jalankan `python manage.py test main` untuk menguji Tugas 6 bersama Tutorial 07 dan fitur lama.
 
 Status pengalaman ditentukan dari `ended_at`: kosong berarti masih berlangsung, sedangkan terisi berarti selesai. Form Experience saat ini belum menyediakan pengubahan tanggal tersebut.
 
@@ -392,3 +407,17 @@ Ringkasan strategi pengerjaan:
 3. runserver
 4. kalo ada yg ga sesuai minta di benerin
 5. commit
+
+### Tugas 6
+
+1. **REST, JSON, PUT, dan PATCH.** REST adalah gaya perancangan API yang memperlakukan data sebagai resource dengan URL, memakai semantik metode HTTP, dan memberikan status response yang sesuai. Mengembalikan JSON saja hanya menentukan format representasi; endpoint yang selalu memakai POST untuk semua tindakan atau mengabaikan status HTTP belum mengikuti pola RESTful. Pada `/api/v1/achievements/<id>/`, PUT digunakan untuk mengganti representasi prestasi secara lengkap, misalnya mengirim judul, deskripsi, bidang, dan URL gambar sekaligus. PATCH dipakai untuk perubahan sebagian, misalnya hanya memperbarui judul tanpa mengubah deskripsi. API ini memakai session untuk login, sehingga tidak sepenuhnya stateless menurut pengertian REST yang ketat.
+
+2. **Peran serializer.** `AchievementSerializer` mengubah model menjadi data respons dan memvalidasi data masuk sebelum disimpan. Daftar `fields` yang eksplisit membatasi informasi publik, `validate_title` dan `validate_field` membersihkan input, dan `SerializerMethodField` menghitung star berdasarkan akun yang meminta. Dibanding merakit dictionary untuk `JsonResponse`, serializer menyatukan aturan representasi, validasi, serta create/update sehingga kontrak API lebih konsisten dan lebih mudah diuji.
+
+3. **Autentikasi dan otorisasi.** `SessionAuthentication` mengenali akun dari session dan mengisi `request.user`; permission class menentukan tindakan yang diizinkan untuk akun tersebut. Pengunjung boleh membaca, akun biasa boleh star, Editor boleh PUT/PATCH, dan superuser boleh membuat serta menghapus. Menyembunyikan tombol hanya mengubah tampilan browser. Klien masih dapat mengirim request langsung ke URL API, sehingga izin harus diperiksa di server.
+
+4. **CSRF pada session.** Browser otomatis mengirim cookie session pada request ke situs yang sama. Tanpa token CSRF, situs lain dapat mencoba memicu request yang mengubah data atas nama pengguna yang sedang login. Karena itu POST, PUT, PATCH, dan DELETE melalui `fetch()` menyertakan `X-CSRFToken`. `force_authenticate()` pada `APIClient` melewati proses autentikasi session, jadi test izin yang memakainya tidak membuktikan pemeriksaan CSRF. Test CSRF menggunakan `APIClient(enforce_csrf_checks=True)` dan `.login()`: request tanpa token ditolak, sedangkan request dengan token dari halaman berhasil.
+
+### AI Disclosure Tugas 6
+
+Saya menggunakan OpenAI Codex untuk membaca persyaratan Tugas 6, memetakan model `Achievements` sebagai bagian yang berbeda dari `Experience` pada Tutorial 07, menulis serializer/API dan modal edit AJAX, serta menyusun test dan jawaban reflektif. Strategi prompting saya adalah meminta implementasi sesuai tautan tugas, mempertahankan fitur lama, dan meminta hasil tetap di working tree agar commit/push saya lakukan sendiri. Keterbatasan bantuan AI adalah contoh tutorial memakai model `Project`, sedangkan repo ini memakai `Experience` dan `Achievements`; pemetaan model dan field harus diperiksa terhadap kode yang nyata. Implementasi diverifikasi dengan test DRF dan Django, pemeriksaan migrasi, serta pengecekan endpoint lokal.
